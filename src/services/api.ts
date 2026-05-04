@@ -22,6 +22,9 @@ export async function fetchCharacters(searchTerm = ''): Promise<Item[]> {
   }
 
   const response = await fetch(url);
+  if (response.status === 404) {
+    throw new Error('No characters found');
+  }
 
   if (!response.ok) {
     throw new Error('Failed to load characters');

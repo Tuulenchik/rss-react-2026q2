@@ -9,11 +9,13 @@ import Loader from './components/Loader/Loader';
 type AppState = {
   items: Item[];
   isLoading: boolean;
+  errorMessage: string;
 };
 class App extends Component<Record<string, never>, AppState> {
   state: AppState = {
     items: [],
     isLoading: true,
+    errorMessage: '',
   };
 
   componentDidMount() {
@@ -21,27 +23,30 @@ class App extends Component<Record<string, never>, AppState> {
 
     fetchCharacters(savedSearchTerm)
       .then((items) => {
-        this.setState({ items, isLoading: false });
+        this.setState({ items, isLoading: false, errorMessage: '' });
       })
-      .catch(() => {
-        this.setState({ items: [], isLoading: false });
+      .catch((error: unknown) => {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Something went wrong';
+        this.setState({ items: [], isLoading: false, errorMessage });
       });
   }
+
   handleSearch = (searchTerm: string) => {
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, errorMessage: '' });
 
     fetchCharacters(searchTerm)
       .then((items) => {
         this.setState({
           items,
           isLoading: false,
+          errorMessage: '',
         });
       })
-      .catch(() => {
-        this.setState({
-          items: [],
-          isLoading: false,
-        });
+      .catch((error: unknown) => {
+        const errorMessage =
+          error instanceof Error ? error.message : 'No results were found';
+        this.setState({ items: [], isLoading: false, errorMessage });
       });
   };
 
@@ -57,6 +62,8 @@ class App extends Component<Record<string, never>, AppState> {
           <h1>Results</h1>
           {this.state.isLoading ? (
             <Loader />
+          ) : this.state.errorMessage ? (
+            <p className="error-message">{this.state.errorMessage}</p>
           ) : (
             <ResultsList items={this.state.items} />
           )}
