@@ -29,3 +29,9 @@
   margin: 0;
   color: #cf222e;
 }
+
+.error-button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

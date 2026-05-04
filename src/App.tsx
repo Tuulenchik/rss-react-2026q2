@@ -1,4 +1,5 @@
 import './App.css';
+import ErrorTestButton from './components/ErrorTestButton/ErrorTestButton';
 import { Component } from 'react';
 import Search from './components/Search/Search';
 import { fetchCharacters } from './services/api';
@@ -67,6 +68,9 @@ class App extends Component<Record<string, never>, AppState> {
           ) : (
             <ResultsList items={this.state.items} />
           )}
+          <div className="error-button-wrapper">
+            <ErrorTestButton />
+          </div>
         </section>
       </main>
     );
