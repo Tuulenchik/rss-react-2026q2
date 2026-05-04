@@ -1,22 +1,31 @@
 import './App.css';
 import { Component } from 'react';
 import Search from './components/Search/Search';
+import { fetchCharacters } from './services/api';
 import ResultsList from './components/ResultsList/ResultsList';
 import type { Item } from './types/item';
 
-const testItems: Item[] = [
-  {
-    id: '1',
-    name: 'First result',
-    description: 'This is the description for the first result.',
-  },
-  {
-    id: '2',
-    name: 'Second result',
-    description: 'This is the description for the second result.',
-  },
-];
-class App extends Component {
+type AppState = {
+  items: Item[];
+};
+class App extends Component<Record<string, never>, AppState>{
+  
+  state: AppState = {
+    items: [],
+  };
+
+  componentDidMount() {
+  const savedSearchTerm = localStorage.getItem('searchTerm') ?? '';
+
+  fetchCharacters(savedSearchTerm)
+    .then((items) => {
+      this.setState({ items });
+    })
+    .catch(() => {
+      this.setState({ items: [] });
+    });
+}
+  
   render() {
     return (
       <main className="app">
@@ -27,7 +36,7 @@ class App extends Component {
 
         <section className="results-section">
           <h1>Results</h1>
-          <ResultsList items={testItems} />
+          <ResultsList items={this.state.items} />
         </section>
       </main>
     );
