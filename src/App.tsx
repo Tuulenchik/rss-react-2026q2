@@ -7,11 +7,13 @@ import type { Item } from './types/item';
 
 type AppState = {
   items: Item[];
+  isLoading: boolean;
 };
 class App extends Component<Record<string, never>, AppState>{
   
   state: AppState = {
     items: [],
+    isLoading: true,
   };
 
   componentDidMount() {
@@ -19,10 +21,10 @@ class App extends Component<Record<string, never>, AppState>{
 
   fetchCharacters(savedSearchTerm)
     .then((items) => {
-      this.setState({ items });
+      this.setState({ items, isLoading: false, });
     })
     .catch(() => {
-      this.setState({ items: [] });
+      this.setState({ items: [], isLoading: false,});
     });
 }
   
@@ -36,7 +38,10 @@ class App extends Component<Record<string, never>, AppState>{
 
         <section className="results-section">
           <h1>Results</h1>
-          <ResultsList items={this.state.items} />
+          {this.state.isLoading ? (<p className="loading-message">Loading...</p>) : (
+            <ResultsList items={this.state.items} />
+          )}
+          
         </section>
       </main>
     );

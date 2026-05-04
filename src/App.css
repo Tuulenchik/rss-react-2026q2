@@ -19,3 +19,8 @@
 .results-section {
   min-height: 320px;
 }
+
+.loading-message {
+  margin: 0;
+  color: #57606a;
+}
