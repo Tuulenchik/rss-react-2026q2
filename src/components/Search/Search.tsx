@@ -3,7 +3,9 @@ import './Search.css';
 
 const SEARCH_TERM_KEY = 'searchTerm';
 
-type SearchProps = Record<string, never>;
+type SearchProps = {
+  onSearch: (searchTerm: string) => void;
+};
 
 type SearchState = {
   searchTerm: string;
@@ -20,6 +22,10 @@ class Search extends Component<SearchProps, SearchState> {
     });
   };
 
+  handleSearchClick = () => {
+    this.props.onSearch(this.state.searchTerm);
+  };
+
   render() {
     return (
       <form className="search-form">
@@ -31,7 +37,11 @@ class Search extends Component<SearchProps, SearchState> {
           placeholder="Search..."
         />
 
-        <button className="search-button" type="button">
+        <button
+          className="search-button"
+          type="button"
+          onClick={this.handleSearchClick}
+        >
           Search
         </button>
       </form>
