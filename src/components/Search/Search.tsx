@@ -23,7 +23,13 @@ class Search extends Component<SearchProps, SearchState> {
   };
 
   handleSearchClick = () => {
-    this.props.onSearch(this.state.searchTerm);
+    const trimmedSearchTerm = this.state.searchTerm.trim();
+
+    this.setState({
+      searchTerm: trimmedSearchTerm,
+    });
+
+    this.props.onSearch(trimmedSearchTerm);
   };
 
   render() {

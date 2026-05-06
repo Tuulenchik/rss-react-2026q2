@@ -11,16 +11,18 @@ type AppState = {
   items: Item[];
   isLoading: boolean;
   errorMessage: string;
+  lastSearchTerm: string;
 };
 class App extends Component<Record<string, never>, AppState> {
   state: AppState = {
     items: [],
     isLoading: true,
     errorMessage: '',
+    lastSearchTerm: localStorage.getItem('searchTerm')?.trim() ?? '',
   };
 
   componentDidMount() {
-    const savedSearchTerm = localStorage.getItem('searchTerm') ?? '';
+    const savedSearchTerm = localStorage.getItem('searchTerm')?.trim() ?? '';
 
     fetchCharacters(savedSearchTerm)
       .then((items) => {
@@ -34,9 +36,21 @@ class App extends Component<Record<string, never>, AppState> {
   }
 
   handleSearch = (searchTerm: string) => {
-    this.setState({ isLoading: true, errorMessage: '' });
+    const trimmedSearchTerm = searchTerm.trim();
 
-    fetchCharacters(searchTerm)
+    if (trimmedSearchTerm === this.state.lastSearchTerm) {
+      return;
+    }
+
+    localStorage.setItem('searchTerm', trimmedSearchTerm);
+
+    this.setState({
+      isLoading: true,
+      errorMessage: '',
+      lastSearchTerm: trimmedSearchTerm,
+    });
+
+    fetchCharacters(trimmedSearchTerm)
       .then((items) => {
         this.setState({
           items,
@@ -47,7 +61,12 @@ class App extends Component<Record<string, never>, AppState> {
       .catch((error: unknown) => {
         const errorMessage =
           error instanceof Error ? error.message : 'No results were found';
-        this.setState({ items: [], isLoading: false, errorMessage });
+
+        this.setState({
+          items: [],
+          isLoading: false,
+          errorMessage,
+        });
       });
   };
 
