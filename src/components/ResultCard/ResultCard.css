@@ -1,0 +1,19 @@
+.result-card {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 16px;
+  align-items: start;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.result-card-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.result-card-description {
+  margin: 0;
+  line-height: 1.5;
+}
