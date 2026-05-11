@@ -34,7 +34,7 @@ class Search extends Component<SearchProps, SearchState> {
 
   render() {
     return (
-      <form className="search-form">
+      <div className="search-div">
         <input
           value={this.state.searchTerm}
           onChange={this.handleInputChange}
@@ -50,7 +50,7 @@ class Search extends Component<SearchProps, SearchState> {
         >
           Search
         </button>
-      </form>
+      </div>
     );
   }
 }
