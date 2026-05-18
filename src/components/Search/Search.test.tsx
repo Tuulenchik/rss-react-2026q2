@@ -14,7 +14,7 @@ afterEach(() => {
 test('calls onSearch with typed value after search button click', async () => {
   const user = userEvent.setup();
   const onSearch = vi.fn();
-  render(<Search onSearch={onSearch} />);
+  render(<Search initialSearchTerm="" onSearch={onSearch} />);
 
   const input = screen.getByPlaceholderText('Search...');
   const button = screen.getByRole('button', { name: /search/i });
@@ -29,24 +29,15 @@ test('calls onSearch with typed value after search button click', async () => {
 test('shows empty input when local storage is empty', () => {
   const onSearch = vi.fn();
 
-  render(<Search onSearch={onSearch} />);
+  render(<Search initialSearchTerm="" onSearch={onSearch} />);
   const input = screen.getByPlaceholderText('Search...');
   expect(input).toHaveValue('');
-});
-
-test('reads saved search term from localStorage on render', () => {
-  localStorage.setItem('searchTerm', 'Aqua');
-  const onSearch = vi.fn();
-  render(<Search onSearch={onSearch} />);
-  const input = screen.getByPlaceholderText('Search...');
-
-  expect(input).toHaveValue('Aqua');
 });
 
 test('trims whitespace before calling onSearch', async () => {
   const user = userEvent.setup();
   const onSearch = vi.fn();
-  render(<Search onSearch={onSearch} />);
+  render(<Search initialSearchTerm="" onSearch={onSearch} />);
 
   const input = screen.getByPlaceholderText('Search...');
   const button = screen.getByRole('button', { name: /search/i });

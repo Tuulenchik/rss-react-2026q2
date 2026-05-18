@@ -18,6 +18,26 @@ export type CharacterApiItem = {
   };
 };
 
+export type CharacterDetailsApiItem = CharacterApiItem & {
+  image: string;
+  episode: string[];
+};
+
+export type CharacterDetails = {
+  id: string;
+  name: string;
+  status: string;
+  species: string;
+  gender: string;
+  origin: string;
+  location: string;
+  image: string;
+  episodesCount: number;
+};
+
 export type CharactersApiResponse = {
+  info: {
+    pages: number;
+  };
   results: CharacterApiItem[];
 };
