@@ -1,4 +1,4 @@
-import { Component, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import './Search.css';
 
 const SEARCH_TERM_KEY = 'searchTerm';
@@ -11,48 +11,44 @@ type SearchState = {
   searchTerm: string;
 };
 
-class Search extends Component<SearchProps, SearchState> {
-  state: SearchState = {
+export default function Search({ onSearch }: SearchProps) {
+  const [searchState, setSearchState] = useState<SearchState>(() => ({
     searchTerm: localStorage.getItem(SEARCH_TERM_KEY) ?? '',
-  };
+  }));
 
-  handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    this.setState({
+  function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
+    setSearchState({
       searchTerm: e.target.value,
     });
-  };
+  }
 
-  handleSearchClick = () => {
-    const trimmedSearchTerm = this.state.searchTerm.trim();
+  function handleSearchClick() {
+    const trimmedSearchTerm = searchState.searchTerm.trim();
 
-    this.setState({
+    setSearchState({
       searchTerm: trimmedSearchTerm,
     });
 
-    this.props.onSearch(trimmedSearchTerm);
-  };
-
-  render() {
-    return (
-      <div className="search-div">
-        <input
-          value={this.state.searchTerm}
-          onChange={this.handleInputChange}
-          type="text"
-          className="search-input"
-          placeholder="Search..."
-        />
-
-        <button
-          className="search-button"
-          type="button"
-          onClick={this.handleSearchClick}
-        >
-          Search
-        </button>
-      </div>
-    );
+    onSearch(trimmedSearchTerm);
   }
-}
 
-export default Search;
+  return (
+    <div className="search-div">
+      <input
+        value={searchState.searchTerm}
+        onChange={handleInputChange}
+        type="text"
+        className="search-input"
+        placeholder="Search..."
+      />
+
+      <button
+        className="search-button"
+        type="button"
+        onClick={handleSearchClick}
+      >
+        Search
+      </button>
+    </div>
+  );
+}
