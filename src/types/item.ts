@@ -19,5 +19,8 @@ export type CharacterApiItem = {
 };
 
 export type CharactersApiResponse = {
+  info: {
+    pages: number;
+  };
   results: CharacterApiItem[];
 };

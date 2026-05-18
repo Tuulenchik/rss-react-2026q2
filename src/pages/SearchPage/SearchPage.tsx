@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, Outlet } from 'react-router';
+import { Link, Outlet, useParams, useNavigate } from 'react-router';
 import ErrorTestButton from '../../components/ErrorTestButton/ErrorTestButton';
 import Loader from '../../components/Loader/Loader';
 import ResultsList from '../../components/ResultsList/ResultsList';
@@ -8,12 +8,24 @@ import { SEARCH_TERM_KEY } from '../../constants/storage';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { fetchCharacters } from '../../services/api';
 import type { Item } from '../../types/item';
+import Pagination from '../../components/Pagination/Pagination';
 
 type SearchPageState = {
   items: Item[];
   isLoading: boolean;
   errorMessage: string;
+  totalPages: number;
 };
+
+function getValidPageNumber(pageNumber: string | undefined) {
+  const parsedPageNumber = Number(pageNumber);
+
+  if (!Number.isInteger(parsedPageNumber) || parsedPageNumber < 1) {
+    return 1;
+  }
+
+  return parsedPageNumber;
+}
 
 export default function SearchPage() {
   const [savedSearchTerm, setSavedSearchTerm] = useLocalStorage(
@@ -21,17 +33,22 @@ export default function SearchPage() {
     ''
   );
 
+  const { pageNumber } = useParams();
+  const navigate = useNavigate();
+  const currentPage = getValidPageNumber(pageNumber);
+
   const [searchPageState, setSearchPageState] = useState<SearchPageState>({
     items: [],
     isLoading: true,
     errorMessage: '',
+    totalPages: 1,
   });
 
   useEffect(() => {
     let isCurrentRequest = true;
 
-    fetchCharacters(savedSearchTerm)
-      .then((items) => {
+    fetchCharacters(savedSearchTerm, currentPage)
+      .then(({ items, totalPages }) => {
         if (!isCurrentRequest) {
           return;
         }
@@ -39,6 +56,7 @@ export default function SearchPage() {
         setSearchPageState((currentState) => ({
           ...currentState,
           items,
+          totalPages,
           isLoading: false,
           errorMessage: '',
         }));
@@ -54,6 +72,7 @@ export default function SearchPage() {
         setSearchPageState((currentState) => ({
           ...currentState,
           items: [],
+          totalPages: 1,
           isLoading: false,
           errorMessage,
         }));
@@ -62,12 +81,12 @@ export default function SearchPage() {
     return () => {
       isCurrentRequest = false;
     };
-  }, [savedSearchTerm]);
+  }, [savedSearchTerm, currentPage]);
 
   function handleSearch(searchTerm: string) {
     const trimmedSearchTerm = searchTerm.trim();
 
-    if (trimmedSearchTerm === savedSearchTerm) {
+    if (trimmedSearchTerm === savedSearchTerm && currentPage === 1) {
       return;
     }
 
@@ -78,6 +97,21 @@ export default function SearchPage() {
     }));
 
     setSavedSearchTerm(trimmedSearchTerm);
+    navigate('/page/1');
+  }
+
+  function handlePageChange(page: number) {
+    if (page === currentPage) {
+      return;
+    }
+
+    setSearchPageState((currentState) => ({
+      ...currentState,
+      isLoading: true,
+      errorMessage: '',
+    }));
+
+    navigate(`/page/${page}`);
   }
 
   return (
@@ -90,12 +124,24 @@ export default function SearchPage() {
 
       <section className="results-section">
         <h1>Results</h1>
+
         {searchPageState.isLoading ? (
           <Loader />
         ) : searchPageState.errorMessage ? (
           <p className="error-message">{searchPageState.errorMessage}</p>
         ) : (
-          <ResultsList items={searchPageState.items} />
+          <>
+            <ResultsList items={searchPageState.items} />
+
+            {searchPageState.items.length > 0 &&
+              searchPageState.totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={searchPageState.totalPages}
+                  onPageChange={handlePageChange}
+                />
+              )}
+          </>
         )}
 
         <div className="error-button-wrapper">
