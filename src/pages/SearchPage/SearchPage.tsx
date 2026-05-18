@@ -27,6 +27,16 @@ function getValidPageNumber(pageNumber: string | undefined) {
   return parsedPageNumber;
 }
 
+function isInvalidPageNumber(pageNumber: string | undefined) {
+  const parsedPageNumber = Number(pageNumber);
+
+  return (
+    pageNumber === undefined ||
+    !Number.isInteger(parsedPageNumber) ||
+    parsedPageNumber < 1
+  );
+}
+
 export default function SearchPage() {
   const [savedSearchTerm, setSavedSearchTerm] = useLocalStorage(
     SEARCH_TERM_KEY,
@@ -35,7 +45,9 @@ export default function SearchPage() {
 
   const { pageNumber } = useParams();
   const navigate = useNavigate();
+
   const currentPage = getValidPageNumber(pageNumber);
+  const hasInvalidPageNumber = isInvalidPageNumber(pageNumber);
 
   const [searchPageState, setSearchPageState] = useState<SearchPageState>({
     items: [],
@@ -45,6 +57,16 @@ export default function SearchPage() {
   });
 
   useEffect(() => {
+    if (hasInvalidPageNumber) {
+      navigate('/page/1', { replace: true });
+    }
+  }, [hasInvalidPageNumber, navigate]);
+
+  useEffect(() => {
+    if (hasInvalidPageNumber) {
+      return;
+    }
+
     let isCurrentRequest = true;
 
     fetchCharacters(savedSearchTerm, currentPage)
@@ -81,7 +103,7 @@ export default function SearchPage() {
     return () => {
       isCurrentRequest = false;
     };
-  }, [savedSearchTerm, currentPage]);
+  }, [savedSearchTerm, currentPage, hasInvalidPageNumber]);
 
   function handleSearch(searchTerm: string) {
     const trimmedSearchTerm = searchTerm.trim();
