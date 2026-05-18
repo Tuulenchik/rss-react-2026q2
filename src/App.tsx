@@ -6,89 +6,78 @@ import ResultsList from './components/ResultsList/ResultsList';
 import type { Item } from './types/item';
 import Loader from './components/Loader/Loader';
 import { useState, useEffect } from 'react';
+import { SEARCH_TERM_KEY } from './constants/storage';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 type AppState = {
   items: Item[];
   isLoading: boolean;
   errorMessage: string;
-  lastSearchTerm: string;
 };
 export default function App() {
-  const [appState, setAppState] = useState<AppState>(() => ({
+  const [savedSearchTerm, setSavedSearchTerm] = useLocalStorage(
+    SEARCH_TERM_KEY,
+    ''
+  );
+
+  const [appState, setAppState] = useState<AppState>({
     items: [],
     isLoading: true,
     errorMessage: '',
-    lastSearchTerm: localStorage.getItem('searchTerm')?.trim() ?? '',
-  }));
+  });
 
   useEffect(() => {
-    const savedSearchTerm = localStorage.getItem('searchTerm')?.trim() ?? '';
+    let isCurrentRequest = true;
+
     fetchCharacters(savedSearchTerm)
       .then((items) => {
-        setAppState((a) => ({
-          ...a,
+        if (!isCurrentRequest) {
+          return;
+        }
+
+        setAppState((currentState) => ({
+          ...currentState,
           items,
           isLoading: false,
           errorMessage: '',
         }));
       })
       .catch((error: unknown) => {
+        if (!isCurrentRequest) {
+          return;
+        }
+
         const errorMessage =
-          error instanceof Error ? error.message : 'Something went wrong';
-        setAppState((a) => ({
-          ...a,
+          error instanceof Error ? error.message : 'No results were found';
+
+        setAppState((currentState) => ({
+          ...currentState,
           items: [],
           isLoading: false,
           errorMessage,
         }));
       });
-  }, []);
+
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, [savedSearchTerm]);
 
   function handleSearch(searchTerm: string) {
     const trimmedSearchTerm = searchTerm.trim();
 
-    if (trimmedSearchTerm === appState.lastSearchTerm) {
+    if (trimmedSearchTerm === savedSearchTerm) {
       return;
     }
 
-    localStorage.setItem('searchTerm', trimmedSearchTerm);
-
-    setAppState((a)=>(
-      {
-      ...a,
-      isLoading: true,
-      errorMessage: '',
-      lastSearchTerm: trimmedSearchTerm,
-    }
-    ));
-
-    fetchCharacters(trimmedSearchTerm)
-      .then((items) => {
-        setAppState((a) => ({
-          ...a,
-          items,
-          isLoading: false,
-          errorMessage: '',
-        }));
-      })
-      .catch((error: unknown) => {
-        const errorMessage =
-          error instanceof Error ? error.message : 'No results were found';
-
-        setAppState((a) => ({
-          ...a,
-          items: [],
-          isLoading: false,
-          errorMessage,
-        }));
-      });
+    setSavedSearchTerm(trimmedSearchTerm);
   }
 
   return (
     <main className="app">
       <section className="search-section">
         <h1>Search</h1>
-        <Search onSearch={handleSearch} />
+        <Search initialSearchTerm={savedSearchTerm} onSearch={handleSearch} />
       </section>
 
       <section className="results-section">

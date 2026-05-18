@@ -1,41 +1,29 @@
 import { useState, type ChangeEvent } from 'react';
 import './Search.css';
 
-const SEARCH_TERM_KEY = 'searchTerm';
-
 type SearchProps = {
+  initialSearchTerm: string;
   onSearch: (searchTerm: string) => void;
 };
 
-type SearchState = {
-  searchTerm: string;
-};
-
-export default function Search({ onSearch }: SearchProps) {
-  const [searchState, setSearchState] = useState<SearchState>(() => ({
-    searchTerm: localStorage.getItem(SEARCH_TERM_KEY) ?? '',
-  }));
+export default function Search({ initialSearchTerm, onSearch }: SearchProps) {
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
-    setSearchState({
-      searchTerm: e.target.value,
-    });
+    setSearchTerm(e.target.value);
   }
 
   function handleSearchClick() {
-    const trimmedSearchTerm = searchState.searchTerm.trim();
+    const trimmedSearchTerm = searchTerm.trim();
 
-    setSearchState({
-      searchTerm: trimmedSearchTerm,
-    });
-
+    setSearchTerm(trimmedSearchTerm);
     onSearch(trimmedSearchTerm);
   }
 
   return (
     <div className="search-div">
       <input
-        value={searchState.searchTerm}
+        value={searchTerm}
         onChange={handleInputChange}
         type="text"
         className="search-input"
