@@ -1,34 +1,22 @@
-import { Component } from 'react';
+import { useState } from 'react';
 
-type ErrorTestButtonState = {
-  shouldThrowError: boolean;
-};
+type ErrorTestButtonState = boolean;
 
-class ErrorTestButton extends Component<
-  Record<string, never>,
-  ErrorTestButtonState
-> {
-  state: ErrorTestButtonState = {
-    shouldThrowError: false,
-  };
+export default function ErrorTestButton() {
+  const [shouldThrowError, setshouldThrowError] =
+    useState<ErrorTestButtonState>(false);
 
-  handleClick = () => {
-    this.setState({
-      shouldThrowError: true,
-    });
-  };
-
-  render() {
-    if (this.state.shouldThrowError) {
-      throw new Error('Test error for Error Boundary');
-    }
-
-    return (
-      <button type="button" onClick={this.handleClick}>
-        Test Error Boundary
-      </button>
-    );
+  function handleClick() {
+    setshouldThrowError(true);
   }
-}
 
-export default ErrorTestButton;
+  if (shouldThrowError === true) {
+    throw new Error('Test error for Error Boundary');
+  }
+
+  return (
+    <button type="button" onClick={handleClick}>
+      Test Error Boundary
+    </button>
+  );
+}
