@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import Pagination from './Pagination';
 
 afterEach(() => {
@@ -41,4 +42,19 @@ test('disables previous button on first page and next button on last page', () =
 
   expect(screen.getByRole('button', { name: /previous/i })).toBeEnabled();
   expect(screen.getByRole('button', { name: /next/i })).toBeDisabled();
+});
+
+test('calls onPageChange when previous and next buttons are clicked', async () => {
+  const user = userEvent.setup();
+  const onPageChange = vi.fn();
+
+  render(
+    <Pagination currentPage={2} totalPages={3} onPageChange={onPageChange} />
+  );
+
+  await user.click(screen.getByRole('button', { name: /previous/i }));
+  await user.click(screen.getByRole('button', { name: /next/i }));
+
+  expect(onPageChange).toHaveBeenNthCalledWith(1, 1);
+  expect(onPageChange).toHaveBeenNthCalledWith(2, 3);
 });

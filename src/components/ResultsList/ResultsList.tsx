@@ -4,9 +4,10 @@ import './ResultsList.css';
 
 type ResultsListProps = {
   items: Item[];
+  currentPage: number;
 };
 
-export default function ResultsList({ items }: ResultsListProps) {
+export default function ResultsList({ items, currentPage }: ResultsListProps) {
   if (items.length === 0) {
     return <p className="results-empty">No results yet</p>;
   }
@@ -14,7 +15,11 @@ export default function ResultsList({ items }: ResultsListProps) {
   return (
     <div className="results-list">
       {items.map((item) => (
-        <ResultCard key={item.id} item={item} />
+        <ResultCard
+          key={item.id}
+          item={item}
+          detailsPath={`/page/${currentPage}/details/${item.id}`}
+        />
       ))}
     </div>
   );

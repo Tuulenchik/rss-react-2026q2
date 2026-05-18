@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Link, Outlet, useParams, useNavigate } from 'react-router';
+import { Link, Outlet, useNavigate, useParams } from 'react-router';
 import ErrorTestButton from '../../components/ErrorTestButton/ErrorTestButton';
 import Loader from '../../components/Loader/Loader';
+import Pagination from '../../components/Pagination/Pagination';
 import ResultsList from '../../components/ResultsList/ResultsList';
 import Search from '../../components/Search/Search';
 import { SEARCH_TERM_KEY } from '../../constants/storage';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { fetchCharacters } from '../../services/api';
 import type { Item } from '../../types/item';
-import Pagination from '../../components/Pagination/Pagination';
 
 type SearchPageState = {
   items: Item[];
@@ -116,40 +116,50 @@ export default function SearchPage() {
 
   return (
     <main className="app">
-      <section className="search-section">
-        <h1>Search</h1>
-        <Link to="/about">About</Link>
-        <Search initialSearchTerm={savedSearchTerm} onSearch={handleSearch} />
-      </section>
+      <div className="app-content">
+        <div className="app-main-column">
+          <section className="search-section">
+            <h1>Search</h1>
+            <Link to="/about">About</Link>
+            <Search
+              initialSearchTerm={savedSearchTerm}
+              onSearch={handleSearch}
+            />
+          </section>
 
-      <section className="results-section">
-        <h1>Results</h1>
+          <section className="results-section">
+            <h1>Results</h1>
 
-        {searchPageState.isLoading ? (
-          <Loader />
-        ) : searchPageState.errorMessage ? (
-          <p className="error-message">{searchPageState.errorMessage}</p>
-        ) : (
-          <>
-            <ResultsList items={searchPageState.items} />
-
-            {searchPageState.items.length > 0 &&
-              searchPageState.totalPages > 1 && (
-                <Pagination
+            {searchPageState.isLoading ? (
+              <Loader />
+            ) : searchPageState.errorMessage ? (
+              <p className="error-message">{searchPageState.errorMessage}</p>
+            ) : (
+              <>
+                <ResultsList
+                  items={searchPageState.items}
                   currentPage={currentPage}
-                  totalPages={searchPageState.totalPages}
-                  onPageChange={handlePageChange}
                 />
-              )}
-          </>
-        )}
 
-        <div className="error-button-wrapper">
-          <ErrorTestButton />
+                {searchPageState.items.length > 0 &&
+                  searchPageState.totalPages > 1 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={searchPageState.totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  )}
+              </>
+            )}
+
+            <div className="error-button-wrapper">
+              <ErrorTestButton />
+            </div>
+          </section>
         </div>
-      </section>
 
-      <Outlet />
+        <Outlet />
+      </div>
     </main>
   );
 }

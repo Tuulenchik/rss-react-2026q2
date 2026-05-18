@@ -35,3 +35,20 @@
   justify-content: flex-end;
   margin-top: 24px;
 }
+
+.app-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: start;
+}
+
+.app-main-column {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .app-content {
+    grid-template-columns: 1fr;
+  }
+}
