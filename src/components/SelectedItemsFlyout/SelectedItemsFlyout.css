@@ -1,0 +1,38 @@
+.selected-items-flyout {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  margin-top: 24px;
+  padding: 16px 20px;
+
+  border: 1px solid #c9c9c9;
+  border-radius: 12px 12px 0 0;
+  background-color: #242424;
+}
+
+.selected-items-flyout__count {
+  margin: 0;
+  font-weight: 700;
+}
+
+.selected-items-flyout__actions {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .selected-items-flyout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selected-items-flyout__actions {
+    flex-direction: column;
+  }
+}
