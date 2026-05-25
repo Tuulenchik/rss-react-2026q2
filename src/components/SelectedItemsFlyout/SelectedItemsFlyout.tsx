@@ -1,6 +1,7 @@
 import { clearSelectedItems } from '../../features/selectedItems/selectedItemsSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import './SelectedItemsFlyout.css';
+import { downloadSelectedItemsCsv } from '../../utils/csv';
 
 export default function SelectedItemsFlyout() {
   const dispatch = useAppDispatch();
@@ -20,9 +21,8 @@ export default function SelectedItemsFlyout() {
   }
 
   function handleDownload() {
-    console.log('Download selected items:', selectedItems);
+    downloadSelectedItemsCsv(selectedItems);
   }
-
   return (
     <aside className="selected-items-flyout" aria-label="Selected items actions">
       <p className="selected-items-flyout__count">
