@@ -9,6 +9,7 @@ import { SEARCH_TERM_KEY } from '../../constants/storage';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { fetchCharacters } from '../../services/api';
 import type { Item } from '../../types/item';
+import SelectedItemsFlyout from '../../components/SelectedItemsFlyout/SelectedItemsFlyout';
 
 type SearchPageState = {
   items: Item[];
@@ -171,6 +172,7 @@ export default function SearchPage() {
                       onPageChange={handlePageChange}
                     />
                   )}
+                <SelectedItemsFlyout />
               </>
             )}
 

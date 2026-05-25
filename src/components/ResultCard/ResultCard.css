@@ -1,30 +1,47 @@
 .result-card {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 16px;
-  align-items: start;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
-  padding: 16px;
+  position: relative;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background-color: var(--card-bg);
+  color: var(--text);
 }
 
-.result-card-title {
-  margin: 0;
-  font-size: 18px;
+.result-card__checkbox-label {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  color: var(--text);
+  cursor: pointer;
 }
 
-.result-card-description {
-  margin: 0;
-  line-height: 1.5;
+.result-card__checkbox {
+  cursor: pointer;
 }
 
-.result-card-link {
+.result-card__content-link {
   display: block;
   color: inherit;
+  text-align: center;
   text-decoration: none;
 }
 
-.result-card-link:hover .result-card,
-.result-card-link:focus-visible .result-card {
-  transform: translateY(-2px);
+.result-card__content-link:hover .result-card__title {
+  text-decoration: underline;
+}
+
+.result-card__title {
+  margin: 0 0 12px;
+  color: var(--text-h);
+  font-size: 1.4rem;
+}
+
+.result-card__description {
+  margin: 0;
+  color: var(--text);
 }

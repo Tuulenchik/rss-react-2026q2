@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { useEffect, useState, type MouseEvent } from 'react';
+import { Link, useNavigate, useParams } from 'react-router';
 import Loader from '../../components/Loader/Loader';
 import { fetchCharacterById } from '../../services/api';
 import type { CharacterDetails } from '../../types/item';
@@ -12,7 +12,7 @@ type CharacterDetailsPageState = {
 
 export default function CharacterDetailsPage() {
   const { characterId, pageNumber } = useParams();
-
+  const navigate = useNavigate();
   const [characterDetailsState, setCharacterDetailsState] =
     useState<CharacterDetailsPageState>({
       character: null,
@@ -61,60 +61,73 @@ export default function CharacterDetailsPage() {
   }, [characterId]);
 
   const closePath = `/page/${pageNumber ?? 1}`;
+  function handleBackdropClick() {
+    navigate(closePath);
+  }
+
+  function handlePanelClick(event: MouseEvent<HTMLElement>) {
+    event.stopPropagation();
+  }
 
   return (
-    <aside className="details-panel">
-      <Link className="details-close-link" to={closePath}>
-        Close
-      </Link>
+    <div className="details-backdrop" onClick={handleBackdropClick}>
+      <aside
+        className="details-panel"
+        onClick={handlePanelClick}
+        aria-label="Character details"
+      >
+        <Link className="details-close-link" to={closePath}>
+          Close
+        </Link>
 
-      {isLoading ? (
-        <Loader />
-      ) : characterDetailsState.errorMessage ? (
-        <p className="error-message">{characterDetailsState.errorMessage}</p>
-      ) : characterDetailsState.character ? (
-        <div className="details-content">
-          <img
-            className="details-image"
-            src={characterDetailsState.character.image}
-            alt={characterDetailsState.character.name}
-          />
+        {isLoading ? (
+          <Loader />
+        ) : characterDetailsState.errorMessage ? (
+          <p className="error-message">{characterDetailsState.errorMessage}</p>
+        ) : characterDetailsState.character ? (
+          <div className="details-content">
+            <img
+              className="details-image"
+              src={characterDetailsState.character.image}
+              alt={characterDetailsState.character.name}
+            />
 
-          <h2>{characterDetailsState.character.name}</h2>
+            <h2>{characterDetailsState.character.name}</h2>
 
-          <dl className="details-list">
-            <div>
-              <dt>Status</dt>
-              <dd>{characterDetailsState.character.status}</dd>
-            </div>
+            <dl className="details-list">
+              <div>
+                <dt>Status</dt>
+                <dd>{characterDetailsState.character.status}</dd>
+              </div>
 
-            <div>
-              <dt>Species</dt>
-              <dd>{characterDetailsState.character.species}</dd>
-            </div>
+              <div>
+                <dt>Species</dt>
+                <dd>{characterDetailsState.character.species}</dd>
+              </div>
 
-            <div>
-              <dt>Gender</dt>
-              <dd>{characterDetailsState.character.gender}</dd>
-            </div>
+              <div>
+                <dt>Gender</dt>
+                <dd>{characterDetailsState.character.gender}</dd>
+              </div>
 
-            <div>
-              <dt>Origin</dt>
-              <dd>{characterDetailsState.character.origin}</dd>
-            </div>
+              <div>
+                <dt>Origin</dt>
+                <dd>{characterDetailsState.character.origin}</dd>
+              </div>
 
-            <div>
-              <dt>Location</dt>
-              <dd>{characterDetailsState.character.location}</dd>
-            </div>
+              <div>
+                <dt>Location</dt>
+                <dd>{characterDetailsState.character.location}</dd>
+              </div>
 
-            <div>
-              <dt>Episodes</dt>
-              <dd>{characterDetailsState.character.episodesCount}</dd>
-            </div>
-          </dl>
-        </div>
-      ) : null}
-    </aside>
+              <div>
+                <dt>Episodes</dt>
+                <dd>{characterDetailsState.character.episodesCount}</dd>
+              </div>
+            </dl>
+          </div>
+        ) : null}
+      </aside>
+    </div>
   );
 }

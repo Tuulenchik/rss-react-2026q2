@@ -1,31 +1,30 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import { expect, test } from 'vitest';
+import { screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import ResultsList from './ResultsList';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import { mockItems } from '../../test-utils/mockItems';
 
-test('renders all provided items with links to details pages', () => {
-  render(
-    <MemoryRouter>
+describe('ResultsList', () => {
+  it('renders all provided items with links to details pages', () => {
+    const { container } = renderWithProviders(
       <ResultsList items={mockItems} currentPage={1} />
-    </MemoryRouter>
-  );
+    );
 
-  expect(screen.getByText(/alien rick/i)).toBeInTheDocument();
-  expect(screen.getByText(/antenna rick/i)).toBeInTheDocument();
+    expect(screen.getByText(mockItems[0].name)).toBeInTheDocument();
+    expect(screen.getByText(mockItems[1].name)).toBeInTheDocument();
 
-  expect(screen.getByRole('link', { name: /alien rick/i })).toHaveAttribute(
-    'href',
-    `/page/1/details/${mockItems[0].id}`
-  );
-});
+    const links = within(container).getAllByRole('link');
 
-test('displays "No results yet" when items array is empty', () => {
-  render(
-    <MemoryRouter>
+    expect(links[0]).toHaveAttribute('href', '/page/1/details/1');
+    expect(links[1]).toHaveAttribute('href', '/page/1/details/2');
+  });
+
+  it('renders empty list when items array is empty', () => {
+    const { container } = renderWithProviders(
       <ResultsList items={[]} currentPage={1} />
-    </MemoryRouter>
-  );
+    );
 
-  expect(screen.getByText(/no results yet/i)).toBeInTheDocument();
+    expect(container.querySelector('.results-list')).toBeInTheDocument();
+    expect(within(container).queryAllByRole('article')).toHaveLength(0);
+  });
 });
