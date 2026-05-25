@@ -7,7 +7,7 @@ export default function SelectedItemsFlyout() {
   const dispatch = useAppDispatch();
 
   const selectedItems = useAppSelector((state) =>
-    Object.values(state.selectedItems.itemsById),
+    Object.values(state.selectedItems.itemsById)
   );
 
   const selectedItemsCount = selectedItems.length;
@@ -24,7 +24,10 @@ export default function SelectedItemsFlyout() {
     downloadSelectedItemsCsv(selectedItems);
   }
   return (
-    <aside className="selected-items-flyout" aria-label="Selected items actions">
+    <aside
+      className="selected-items-flyout"
+      aria-label="Selected items actions"
+    >
       <p className="selected-items-flyout__count">
         Selected items: {selectedItemsCount}
       </p>

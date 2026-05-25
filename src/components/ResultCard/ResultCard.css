@@ -1,9 +1,10 @@
 .result-card {
   position: relative;
   padding: 20px 24px;
-  border: 1px solid #c9c9c9;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background-color: #242424;
+  background-color: var(--card-bg);
+  color: var(--text);
 }
 
 .result-card__checkbox-label {
@@ -15,7 +16,7 @@
   gap: 8px;
   align-items: center;
 
-  color: #aeb6c2;
+  color: var(--text);
   cursor: pointer;
 }
 
@@ -36,9 +37,11 @@
 
 .result-card__title {
   margin: 0 0 12px;
+  color: var(--text-h);
   font-size: 1.4rem;
 }
 
 .result-card__description {
   margin: 0;
+  color: var(--text);
 }

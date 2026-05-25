@@ -172,7 +172,7 @@ export default function SearchPage() {
                       onPageChange={handlePageChange}
                     />
                   )}
-                  <SelectedItemsFlyout />
+                <SelectedItemsFlyout />
               </>
             )}
 

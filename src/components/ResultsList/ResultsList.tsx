@@ -13,7 +13,7 @@ export default function ResultsList({ items, currentPage }: ResultsListProps) {
   const dispatch = useAppDispatch();
 
   const selectedItemsById = useAppSelector(
-    (state) => state.selectedItems.itemsById,
+    (state) => state.selectedItems.itemsById
   );
 
   return (
@@ -35,7 +35,7 @@ export default function ResultsList({ items, currentPage }: ResultsListProps) {
                   name: item.name,
                   description: item.description,
                   detailsPath,
-                }),
+                })
               )
             }
           />

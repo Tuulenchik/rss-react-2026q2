@@ -6,7 +6,7 @@
   justify-content: flex-end;
   align-items: flex-start;
   padding: 24px;
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: transparent;
 }
 
 .details-panel {
@@ -17,12 +17,15 @@
   padding: 20px;
   border: 1px solid #c9c9c9;
   border-radius: 12px;
-  background-color: #3f3d3d;
+  background-color: var(--panel-bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
 }
 
 .details-close-link {
   display: inline-block;
   margin-bottom: 16px;
+  color: var(--accent);
 }
 
 .details-content {
