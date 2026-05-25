@@ -1,13 +1,19 @@
+import { useMemo } from 'react';
 import { clearSelectedItems } from '../../features/selectedItems/selectedItemsSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import './SelectedItemsFlyout.css';
 import { downloadSelectedItemsCsv } from '../../utils/csv';
+import './SelectedItemsFlyout.css';
 
 export default function SelectedItemsFlyout() {
   const dispatch = useAppDispatch();
 
-  const selectedItems = useAppSelector((state) =>
-    Object.values(state.selectedItems.itemsById)
+  const selectedItemsById = useAppSelector(
+    (state) => state.selectedItems.itemsById
+  );
+
+  const selectedItems = useMemo(
+    () => Object.values(selectedItemsById),
+    [selectedItemsById]
   );
 
   const selectedItemsCount = selectedItems.length;
@@ -23,6 +29,7 @@ export default function SelectedItemsFlyout() {
   function handleDownload() {
     downloadSelectedItemsCsv(selectedItems);
   }
+
   return (
     <aside
       className="selected-items-flyout"

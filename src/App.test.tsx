@@ -1,17 +1,13 @@
 import { expect, test, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { screen, cleanup, waitFor } from '@testing-library/react';
 import App from './App';
 import userEvent from '@testing-library/user-event';
 import { fetchCharacters } from './services/api';
 import { mockItems } from './test-utils/mockItems';
-import { MemoryRouter } from 'react-router';
+import { renderWithProviders } from './test-utils/renderWithProviders';
 
-function renderApp(route = '/page/1') {
-  return render(
-    <MemoryRouter initialEntries={[route]}>
-      <App />
-    </MemoryRouter>
-  );
+function renderApp() {
+  return renderWithProviders(<App />, { route: '/page/1' });
 }
 const mockCharactersResponse = {
   items: mockItems,
