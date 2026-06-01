@@ -5,7 +5,8 @@ type QueryError = FetchBaseQueryError | SerializedError | undefined;
 
 export function getQueryErrorMessage(
   error: QueryError,
-  fallbackMessage = 'Something went wrong'
+  fallbackMessage = 'Something went wrong',
+  notFoundMessage = 'No characters found'
 ): string {
   if (!error) {
     return '';
@@ -13,7 +14,7 @@ export function getQueryErrorMessage(
 
   if ('status' in error) {
     if (error.status === 404) {
-      return 'No characters found';
+      return notFoundMessage;
     }
 
     return fallbackMessage;
