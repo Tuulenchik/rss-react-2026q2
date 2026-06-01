@@ -106,7 +106,9 @@ export default function SearchPage() {
         <div className="app-main-column">
           <section className="search-section">
             <h1>Search</h1>
-            <Link to="/about">About</Link>
+            <Link className="app-link search-about-link" to="/about">
+              About
+            </Link>
 
             <Search
               initialSearchTerm={savedSearchTerm}
@@ -124,6 +126,7 @@ export default function SearchPage() {
                 <p className="error-message">{errorMessage}</p>
 
                 <button
+                  className="app-button refresh-button"
                   type="button"
                   onClick={handleRefreshResults}
                   disabled={isFetching}
@@ -134,6 +137,7 @@ export default function SearchPage() {
             ) : (
               <>
                 <button
+                  className="app-button refresh-button"
                   type="button"
                   onClick={handleRefreshResults}
                   disabled={isFetching}
@@ -141,7 +145,9 @@ export default function SearchPage() {
                   {isFetching ? 'Refreshing...' : 'Refresh results'}
                 </button>
 
-                {isFetching && <p>Updating results...</p>}
+                {isFetching && (
+                  <p className="query-status-message">Updating results...</p>
+                )}
 
                 <ResultsList items={items} currentPage={currentPage} />
 

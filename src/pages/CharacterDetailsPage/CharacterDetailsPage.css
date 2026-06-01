@@ -58,6 +58,37 @@
   margin: 0;
 }
 
+.details-close-link {
+  align-self: center;
+  padding: 6px 14px;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background-color: var(--accent-bg);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.details-close-link:hover,
+.details-close-link:focus-visible {
+  border-color: var(--accent);
+  background-color: var(--button-hover-bg);
+  color: var(--text-h);
+  transform: translateY(-1px);
+}
+
+.details-refresh-button {
+  align-self: center;
+  margin-bottom: 0;
+}
+
 @media (max-width: 900px) {
   .details-backdrop {
     justify-content: center;

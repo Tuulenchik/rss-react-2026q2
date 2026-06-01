@@ -69,6 +69,7 @@ export default function CharacterDetailsPage() {
             <p className="error-message">{errorMessage}</p>
 
             <button
+              className="app-button refresh-button details-refresh-button"
               type="button"
               onClick={handleRefreshCharacter}
               disabled={isFetching}
@@ -79,6 +80,7 @@ export default function CharacterDetailsPage() {
         ) : character ? (
           <div className="details-content">
             <button
+              className="app-button refresh-button details-refresh-button"
               type="button"
               onClick={handleRefreshCharacter}
               disabled={isFetching}
@@ -86,7 +88,9 @@ export default function CharacterDetailsPage() {
               {isFetching ? 'Refreshing...' : 'Refresh details'}
             </button>
 
-            {isFetching && <p>Updating details...</p>}
+            {isFetching && (
+              <p className="query-status-message">Updating details...</p>
+            )}
 
             <img
               className="details-image"

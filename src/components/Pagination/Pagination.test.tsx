@@ -58,3 +58,46 @@ test('calls onPageChange when previous and next buttons are clicked', async () =
   expect(onPageChange).toHaveBeenNthCalledWith(1, 1);
   expect(onPageChange).toHaveBeenNthCalledWith(2, 3);
 });
+
+test('shows compact pagination with ellipses for middle pages', () => {
+  render(
+    <Pagination currentPage={20} totalPages={42} onPageChange={vi.fn()} />
+  );
+
+  expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '19' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '20' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '21' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '42' })).toBeInTheDocument();
+
+  expect(screen.getAllByText('…')).toHaveLength(2);
+  expect(screen.queryByRole('button', { name: '10' })).not.toBeInTheDocument();
+});
+
+test('shows first pages without start ellipsis near the beginning', () => {
+  render(<Pagination currentPage={3} totalPages={42} onPageChange={vi.fn()} />);
+
+  expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '3' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '4' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '5' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '42' })).toBeInTheDocument();
+
+  expect(screen.getAllByText('…')).toHaveLength(1);
+});
+
+test('shows last pages without end ellipsis near the end', () => {
+  render(
+    <Pagination currentPage={40} totalPages={42} onPageChange={vi.fn()} />
+  );
+
+  expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '38' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '39' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '40' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '41' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '42' })).toBeInTheDocument();
+
+  expect(screen.getAllByText('…')).toHaveLength(1);
+});
