@@ -1,21 +1,18 @@
 import { useState } from 'react';
 
-type ErrorTestButtonState = boolean;
-
 export default function ErrorTestButton() {
-  const [shouldThrowError, setshouldThrowError] =
-    useState<ErrorTestButtonState>(false);
+  const [shouldThrowError, setShouldThrowError] = useState(false);
 
-  function handleClick() {
-    setshouldThrowError(true);
-  }
-
-  if (shouldThrowError === true) {
-    throw new Error('Test error for Error Boundary');
+  if (shouldThrowError) {
+    throw new Error('Test error boundary');
   }
 
   return (
-    <button type="button" onClick={handleClick}>
+    <button
+      className="app-button error-test-button"
+      type="button"
+      onClick={() => setShouldThrowError(true)}
+    >
       Test Error Boundary
     </button>
   );

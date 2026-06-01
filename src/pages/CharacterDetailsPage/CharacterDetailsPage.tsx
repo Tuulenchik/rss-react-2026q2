@@ -1,72 +1,54 @@
-import { useEffect, useState, type MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { Link, useNavigate, useParams } from 'react-router';
 import Loader from '../../components/Loader/Loader';
-import { fetchCharacterById } from '../../services/api';
-import type { CharacterDetails } from '../../types/item';
+import { useGetCharacterByIdQuery } from '../../services/charactersApi';
+import { getQueryErrorMessage } from '../../services/queryError';
 import './CharacterDetailsPage.css';
-
-type CharacterDetailsPageState = {
-  character: CharacterDetails | null;
-  errorMessage: string;
-};
+import { charactersApi } from '../../services/charactersApi';
+import { useAppDispatch } from '../../store/hooks';
 
 export default function CharacterDetailsPage() {
   const { characterId, pageNumber } = useParams();
   const navigate = useNavigate();
-  const [characterDetailsState, setCharacterDetailsState] =
-    useState<CharacterDetailsPageState>({
-      character: null,
-      errorMessage: '',
-    });
+  const dispatch = useAppDispatch();
 
-  const isLoadedCharacter = characterDetailsState.character?.id === characterId;
+  const {
+    data: character,
+    error,
+    isLoading,
+    isFetching,
+  } = useGetCharacterByIdQuery(characterId ?? skipToken);
 
-  const isLoading = !characterDetailsState.errorMessage && !isLoadedCharacter;
-
-  useEffect(() => {
-    if (!characterId) {
-      return;
-    }
-
-    let isCurrentRequest = true;
-
-    fetchCharacterById(characterId)
-      .then((character) => {
-        if (!isCurrentRequest) {
-          return;
-        }
-
-        setCharacterDetailsState({
-          character,
-          errorMessage: '',
-        });
-      })
-      .catch((error: unknown) => {
-        if (!isCurrentRequest) {
-          return;
-        }
-
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to load character';
-
-        setCharacterDetailsState({
-          character: null,
-          errorMessage,
-        });
-      });
-
-    return () => {
-      isCurrentRequest = false;
-    };
-  }, [characterId]);
+  const errorMessage = getQueryErrorMessage(
+    error,
+    'Failed to load character',
+    'Character not found'
+  );
 
   const closePath = `/page/${pageNumber ?? 1}`;
+
   function handleBackdropClick() {
     navigate(closePath);
   }
 
   function handlePanelClick(event: MouseEvent<HTMLElement>) {
     event.stopPropagation();
+  }
+
+  function handleRefreshCharacter() {
+    if (!characterId) {
+      return;
+    }
+
+    dispatch(
+      charactersApi.util.invalidateTags([
+        {
+          type: 'Character',
+          id: characterId.trim(),
+        },
+      ])
+    );
   }
 
   return (
@@ -82,47 +64,71 @@ export default function CharacterDetailsPage() {
 
         {isLoading ? (
           <Loader />
-        ) : characterDetailsState.errorMessage ? (
-          <p className="error-message">{characterDetailsState.errorMessage}</p>
-        ) : characterDetailsState.character ? (
+        ) : errorMessage ? (
+          <>
+            <p className="error-message">{errorMessage}</p>
+
+            <button
+              className="app-button refresh-button details-refresh-button"
+              type="button"
+              onClick={handleRefreshCharacter}
+              disabled={isFetching}
+            >
+              {isFetching ? 'Refreshing...' : 'Refresh details'}
+            </button>
+          </>
+        ) : character ? (
           <div className="details-content">
+            <button
+              className="app-button refresh-button details-refresh-button"
+              type="button"
+              onClick={handleRefreshCharacter}
+              disabled={isFetching}
+            >
+              {isFetching ? 'Refreshing...' : 'Refresh details'}
+            </button>
+
+            {isFetching && (
+              <p className="query-status-message">Updating details...</p>
+            )}
+
             <img
               className="details-image"
-              src={characterDetailsState.character.image}
-              alt={characterDetailsState.character.name}
+              src={character.image}
+              alt={character.name}
             />
 
-            <h2>{characterDetailsState.character.name}</h2>
+            <h2>{character.name}</h2>
 
             <dl className="details-list">
               <div>
                 <dt>Status</dt>
-                <dd>{characterDetailsState.character.status}</dd>
+                <dd>{character.status}</dd>
               </div>
 
               <div>
                 <dt>Species</dt>
-                <dd>{characterDetailsState.character.species}</dd>
+                <dd>{character.species}</dd>
               </div>
 
               <div>
                 <dt>Gender</dt>
-                <dd>{characterDetailsState.character.gender}</dd>
+                <dd>{character.gender}</dd>
               </div>
 
               <div>
                 <dt>Origin</dt>
-                <dd>{characterDetailsState.character.origin}</dd>
+                <dd>{character.origin}</dd>
               </div>
 
               <div>
                 <dt>Location</dt>
-                <dd>{characterDetailsState.character.location}</dd>
+                <dd>{character.location}</dd>
               </div>
 
               <div>
                 <dt>Episodes</dt>
-                <dd>{characterDetailsState.character.episodesCount}</dd>
+                <dd>{character.episodesCount}</dd>
               </div>
             </dl>
           </div>

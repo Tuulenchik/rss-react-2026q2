@@ -2,21 +2,108 @@ import { expect, test, vi, beforeEach, afterEach } from 'vitest';
 import { screen, cleanup, waitFor } from '@testing-library/react';
 import App from './App';
 import userEvent from '@testing-library/user-event';
-import { fetchCharacters } from './services/api';
-import { mockItems } from './test-utils/mockItems';
+import type { CharactersApiResponse } from './types/item';
 import { renderWithProviders } from './test-utils/renderWithProviders';
 
-function renderApp() {
-  return renderWithProviders(<App />, { route: '/page/1' });
-}
-const mockCharactersResponse = {
-  items: mockItems,
-  totalPages: 1,
+const pageOneResponse: CharactersApiResponse = {
+  info: {
+    pages: 2,
+  },
+  results: [
+    {
+      id: 1,
+      name: 'Alien Rick',
+      status: 'unknown',
+      species: 'Alien',
+      gender: 'Male',
+      origin: {
+        name: 'unknown',
+      },
+      location: {
+        name: 'Citadel of Ricks',
+      },
+    },
+    {
+      id: 2,
+      name: 'Antenna Rick',
+      status: 'unknown',
+      species: 'Human',
+      gender: 'Male',
+      origin: {
+        name: 'unknown',
+      },
+      location: {
+        name: 'unknown',
+      },
+    },
+  ],
 };
 
-vi.mock('./services/api', () => ({
-  fetchCharacters: vi.fn(),
-}));
+const pageTwoResponse: CharactersApiResponse = {
+  info: {
+    pages: 2,
+  },
+  results: [
+    {
+      id: 3,
+      name: 'Birdperson',
+      status: 'Alive',
+      species: 'Bird-Person',
+      gender: 'Male',
+      origin: {
+        name: 'Bird World',
+      },
+      location: {
+        name: 'Planet Squanch',
+      },
+    },
+  ],
+};
+
+function createJsonResponse(body: unknown, status = 200) {
+  return Promise.resolve(
+    new Response(JSON.stringify(body), {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  );
+}
+
+function getRequestUrl(input: Parameters<typeof fetch>[0]) {
+  if (typeof input === 'string') {
+    return input;
+  }
+
+  if (input instanceof URL) {
+    return input.toString();
+  }
+
+  return input.url;
+}
+
+function mockCharactersFetch() {
+  const fetchMock = vi.fn<typeof fetch>();
+
+  fetchMock.mockImplementation((input) => {
+    const requestUrl = getRequestUrl(input);
+
+    if (requestUrl.includes('page=2')) {
+      return createJsonResponse(pageTwoResponse);
+    }
+
+    return createJsonResponse(pageOneResponse);
+  });
+
+  vi.stubGlobal('fetch', fetchMock);
+
+  return fetchMock;
+}
+
+function renderApp(route = '/page/1') {
+  return renderWithProviders(<App />, { route });
+}
 
 beforeEach(() => {
   localStorage.clear();
@@ -25,108 +112,119 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
-test('calls fetchCharacters on initial mount', async () => {
-  vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+test('renders characters after successful query', async () => {
+  const fetchMock = mockCharactersFetch();
 
   renderApp();
 
-  await waitFor(() => {
-    expect(fetchCharacters).toHaveBeenCalledTimes(1);
-  });
-
   expect(await screen.findByText(/alien rick/i)).toBeInTheDocument();
   expect(screen.getByText(/antenna rick/i)).toBeInTheDocument();
+
+  expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
-test('uses saved search term from localStorage for initial API call', async () => {
-  vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+test('uses saved search term from localStorage', async () => {
+  const fetchMock = mockCharactersFetch();
+
   localStorage.setItem('searchTerm', 'Rick');
   renderApp();
 
-  const input = screen.getByPlaceholderText('Search...');
-
-  expect(input).toHaveValue('Rick');
+  expect(screen.getByPlaceholderText('Search...')).toHaveValue('Rick');
 
   await waitFor(() => {
-    expect(fetchCharacters).toHaveBeenCalledWith('Rick', 1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  expect(await screen.findByText(/alien rick/i)).toBeInTheDocument();
-  expect(screen.getByText(/antenna rick/i)).toBeInTheDocument();
+  const firstCall = fetchMock.mock.calls[0];
+  const requestUrl = getRequestUrl(firstCall[0]);
+
+  expect(requestUrl).toContain('name=Rick');
 });
 
-test('shows Loader while loading and renders items after successful response', async () => {
-  vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
-  renderApp();
+test('shows error message after failed query', async () => {
+  const fetchMock = vi.fn<typeof fetch>();
 
-  expect(screen.getByText(/loading/i)).toBeInTheDocument();
-
-  expect(await screen.findByText(/alien rick/i)).toBeInTheDocument();
-
-  expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-});
-
-test('renders error message after failed API response', async () => {
-  vi.mocked(fetchCharacters).mockRejectedValue(
-    new Error('Something went wrong')
+  fetchMock.mockResolvedValue(
+    new Response(JSON.stringify({ error: 'Server error' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
   );
 
+  vi.stubGlobal('fetch', fetchMock);
+
   renderApp();
 
-  expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument();
-  expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+  expect(
+    await screen.findByText(/failed to load characters/i)
+  ).toBeInTheDocument();
 });
 
-test('saves trimmed search term to localStorage, calls API and renders results', async () => {
+test('saves trimmed search term and sends new query', async () => {
   const user = userEvent.setup();
-
-  vi.mocked(fetchCharacters)
-    .mockResolvedValueOnce({
-      items: [],
-      totalPages: 1,
-    })
-    .mockResolvedValueOnce(mockCharactersResponse);
+  const fetchMock = mockCharactersFetch();
 
   renderApp();
 
-  await waitFor(() => {
-    expect(fetchCharacters).toHaveBeenCalledTimes(1);
-  });
-
-  const input = screen.getByPlaceholderText('Search...');
-  const button = screen.getByRole('button', { name: /search/i });
-
-  await user.type(input, ' Alien ');
-  await user.click(button);
-
-  await waitFor(() => {
-    expect(fetchCharacters).toHaveBeenCalledWith('Alien', 1);
-  });
-
-  expect(localStorage.getItem('searchTerm')).toBe('Alien');
   expect(await screen.findByText(/alien rick/i)).toBeInTheDocument();
+
+  const input = screen.getByPlaceholderText('Search...');
+  const button = screen.getByRole('button', { name: /^search$/i });
+
+  await user.type(input, ' Rick ');
+  await user.click(button);
+
+  await waitFor(() => {
+    expect(localStorage.getItem('searchTerm')).toBe('Rick');
+  });
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  const secondCall = fetchMock.mock.calls[1];
+  const requestUrl = getRequestUrl(secondCall[0]);
+
+  expect(requestUrl).toContain('name=Rick');
 });
 
-test('does not call API again if search term equals lastSearchTerm', async () => {
+test('uses cached page data when returning to a previously loaded page', async () => {
   const user = userEvent.setup();
-
-  localStorage.setItem('searchTerm', 'Rick');
-  vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+  const fetchMock = mockCharactersFetch();
 
   renderApp();
 
+  expect(await screen.findByText(/alien rick/i)).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+
+  await user.click(screen.getByRole('button', { name: '2' }));
+
+  expect(await screen.findByText(/birdperson/i)).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+
+  await user.click(screen.getByRole('button', { name: '1' }));
+
+  expect(await screen.findByText(/alien rick/i)).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+test('refresh results button sends a new request for current page', async () => {
+  const user = userEvent.setup();
+  const fetchMock = mockCharactersFetch();
+
+  renderApp();
+
+  expect(await screen.findByText(/alien rick/i)).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+
+  await user.click(screen.getByRole('button', { name: /refresh results/i }));
+
   await waitFor(() => {
-    expect(fetchCharacters).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
-
-  const input = screen.getByPlaceholderText('Search...');
-  const button = screen.getByRole('button', { name: /search/i });
-
-  expect(input).toHaveValue('Rick');
-
-  await user.click(button);
-
-  expect(fetchCharacters).toHaveBeenCalledTimes(1);
 });

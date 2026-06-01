@@ -9,6 +9,7 @@ export default function AboutPage() {
         <p>This project is part of the RS School React course.</p>
 
         <a
+          className="app-link"
           href="https://rs.school/courses/reactjs"
           target="_blank"
           rel="noreferrer"
@@ -17,7 +18,9 @@ export default function AboutPage() {
         </a>
 
         <p>
-          <Link to="/page/1">Back to search</Link>
+          <Link className="app-link" to="/page/1">
+            Back to search
+          </Link>
         </p>
       </section>
     </main>
