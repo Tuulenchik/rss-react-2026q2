@@ -1,10 +1,10 @@
 import type {
-  CharacterApiItem,
   CharacterDetails,
   CharacterDetailsApiItem,
   CharactersApiResponse,
   Item,
 } from '../types/item';
+import { mapCharacterToItem, mapCharacterToDetails } from './characterMappers';
 
 const API_BASE_URL = 'https://rickandmortyapi.com/api/character';
 
@@ -12,30 +12,6 @@ type FetchCharactersResult = {
   items: Item[];
   totalPages: number;
 };
-
-function mapCharacterToItem(character: CharacterApiItem): Item {
-  return {
-    id: String(character.id),
-    name: character.name,
-    description: `${character.status} ${character.species}, ${character.gender}. Origin: ${character.origin.name}. Location: ${character.location.name}.`,
-  };
-}
-
-function mapCharacterToDetails(
-  character: CharacterDetailsApiItem
-): CharacterDetails {
-  return {
-    id: String(character.id),
-    name: character.name,
-    status: character.status,
-    species: character.species,
-    gender: character.gender,
-    origin: character.origin.name,
-    location: character.location.name,
-    image: character.image,
-    episodesCount: character.episode.length,
-  };
-}
 
 export async function fetchCharacters(
   searchTerm = '',
