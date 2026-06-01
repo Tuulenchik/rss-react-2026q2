@@ -58,10 +58,7 @@ export default function SearchPage() {
 
   const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
-  const errorMessage = getQueryErrorMessage(
-    error,
-    'Failed to load characters'
-  );
+  const errorMessage = getQueryErrorMessage(error, 'Failed to load characters');
 
   useEffect(() => {
     if (hasInvalidPageNumber) {

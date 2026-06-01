@@ -8,7 +8,6 @@ import './CharacterDetailsPage.css';
 import { charactersApi } from '../../services/charactersApi';
 import { useAppDispatch } from '../../store/hooks';
 
-
 export default function CharacterDetailsPage() {
   const { characterId, pageNumber } = useParams();
   const navigate = useNavigate();
