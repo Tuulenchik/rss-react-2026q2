@@ -5,15 +5,20 @@ import Loader from '../../components/Loader/Loader';
 import { useGetCharacterByIdQuery } from '../../services/charactersApi';
 import { getQueryErrorMessage } from '../../services/queryError';
 import './CharacterDetailsPage.css';
+import { charactersApi } from '../../services/charactersApi';
+import { useAppDispatch } from '../../store/hooks';
+
 
 export default function CharacterDetailsPage() {
   const { characterId, pageNumber } = useParams();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const {
     data: character,
     error,
     isLoading,
+    isFetching,
   } = useGetCharacterByIdQuery(characterId ?? skipToken);
 
   const errorMessage = getQueryErrorMessage(
@@ -32,6 +37,21 @@ export default function CharacterDetailsPage() {
     event.stopPropagation();
   }
 
+  function handleRefreshCharacter() {
+    if (!characterId) {
+      return;
+    }
+
+    dispatch(
+      charactersApi.util.invalidateTags([
+        {
+          type: 'Character',
+          id: characterId.trim(),
+        },
+      ])
+    );
+  }
+
   return (
     <div className="details-backdrop" onClick={handleBackdropClick}>
       <aside
@@ -46,9 +66,29 @@ export default function CharacterDetailsPage() {
         {isLoading ? (
           <Loader />
         ) : errorMessage ? (
-          <p className="error-message">{errorMessage}</p>
+          <>
+            <p className="error-message">{errorMessage}</p>
+
+            <button
+              type="button"
+              onClick={handleRefreshCharacter}
+              disabled={isFetching}
+            >
+              {isFetching ? 'Refreshing...' : 'Refresh details'}
+            </button>
+          </>
         ) : character ? (
           <div className="details-content">
+            <button
+              type="button"
+              onClick={handleRefreshCharacter}
+              disabled={isFetching}
+            >
+              {isFetching ? 'Refreshing...' : 'Refresh details'}
+            </button>
+
+            {isFetching && <p>Updating details...</p>}
+
             <img
               className="details-image"
               src={character.image}

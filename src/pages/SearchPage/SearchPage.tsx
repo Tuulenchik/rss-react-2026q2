@@ -10,6 +10,8 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import SelectedItemsFlyout from '../../components/SelectedItemsFlyout/SelectedItemsFlyout';
 import { useGetCharactersQuery } from '../../services/charactersApi';
 import { getQueryErrorMessage } from '../../services/queryError';
+import { charactersApi } from '../../services/charactersApi';
+import { useAppDispatch } from '../../store/hooks';
 
 function getValidPageNumber(pageNumber: string | undefined) {
   const parsedPageNumber = Number(pageNumber);
@@ -39,11 +41,12 @@ export default function SearchPage() {
 
   const { pageNumber } = useParams();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const currentPage = getValidPageNumber(pageNumber);
   const hasInvalidPageNumber = isInvalidPageNumber(pageNumber);
 
-  const { data, error, isLoading } = useGetCharactersQuery(
+  const { data, error, isLoading, isFetching } = useGetCharactersQuery(
     {
       searchTerm: savedSearchTerm,
       page: currentPage,
@@ -85,6 +88,21 @@ export default function SearchPage() {
     navigate(`/page/${page}`);
   }
 
+  function handleRefreshResults() {
+    if (hasInvalidPageNumber) {
+      return;
+    }
+
+    dispatch(
+      charactersApi.util.invalidateTags([
+        {
+          type: 'Characters',
+          id: `${savedSearchTerm.trim()}-${currentPage}`,
+        },
+      ])
+    );
+  }
+
   return (
     <main className="app">
       <div className="app-content">
@@ -105,9 +123,29 @@ export default function SearchPage() {
             {isLoading ? (
               <Loader />
             ) : errorMessage ? (
-              <p className="error-message">{errorMessage}</p>
+              <>
+                <p className="error-message">{errorMessage}</p>
+
+                <button
+                  type="button"
+                  onClick={handleRefreshResults}
+                  disabled={isFetching}
+                >
+                  {isFetching ? 'Refreshing...' : 'Refresh results'}
+                </button>
+              </>
             ) : (
               <>
+                <button
+                  type="button"
+                  onClick={handleRefreshResults}
+                  disabled={isFetching}
+                >
+                  {isFetching ? 'Refreshing...' : 'Refresh results'}
+                </button>
+
+                {isFetching && <p>Updating results...</p>}
+
                 <ResultsList items={items} currentPage={currentPage} />
 
                 {items.length > 0 && totalPages > 1 && (
