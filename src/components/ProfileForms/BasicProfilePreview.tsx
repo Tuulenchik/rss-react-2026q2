@@ -4,7 +4,9 @@ type BasicProfilePreviewProps = {
   data: BasicProfileFormValues | null;
 };
 
-export default function BasicProfilePreview({ data }: BasicProfilePreviewProps) {
+export default function BasicProfilePreview({
+  data,
+}: BasicProfilePreviewProps) {
   if (!data) {
     return null;
   }

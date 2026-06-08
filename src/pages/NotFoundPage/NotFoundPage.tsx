@@ -7,7 +7,9 @@ export default function NotFoundPage() {
         <h1>404</h1>
         <p>Page not found.</p>
 
-        <Link className="app-link" to="/page/1">Go back to search</Link>
+        <Link className="app-link" to="/page/1">
+          Go back to search
+        </Link>
       </section>
     </main>
   );

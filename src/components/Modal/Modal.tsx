@@ -1,4 +1,10 @@
-import { useEffect, useId, useRef, type MouseEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 import './Modal.css';
@@ -19,7 +25,12 @@ type ModalProps = {
   children: ReactNode;
 };
 
-export default function Modal({ isOpen, title, onClose, children }: ModalProps) {
+export default function Modal({
+  isOpen,
+  title,
+  onClose,
+  children,
+}: ModalProps) {
   const titleId = useId();
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
@@ -30,7 +41,9 @@ export default function Modal({ isOpen, title, onClose, children }: ModalProps) 
     }
 
     previouslyFocusedElementRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
       FOCUSABLE_ELEMENTS_SELECTOR
@@ -50,7 +63,9 @@ export default function Modal({ isOpen, title, onClose, children }: ModalProps) 
       }
 
       const elements = Array.from(
-        modalRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_ELEMENTS_SELECTOR) ?? []
+        modalRef.current?.querySelectorAll<HTMLElement>(
+          FOCUSABLE_ELEMENTS_SELECTOR
+        ) ?? []
       );
 
       if (elements.length === 0) {

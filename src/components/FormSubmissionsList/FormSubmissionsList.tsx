@@ -36,7 +36,10 @@ export default function FormSubmissionsList() {
   }, [dispatch, newestSubmissionId]);
 
   return (
-    <section className="form-submissions-section" aria-labelledby="submissions-title">
+    <section
+      className="form-submissions-section"
+      aria-labelledby="submissions-title"
+    >
       <h1 id="submissions-title">Submitted profiles</h1>
 
       {submissions.length === 0 ? (
@@ -112,14 +115,18 @@ export default function FormSubmissionsList() {
                       {submission.passwordStrength.hasNumber ? '✓' : '×'} number
                     </li>
                     <li>
-                      {submission.passwordStrength.hasUppercase ? '✓' : '×'} uppercase
+                      {submission.passwordStrength.hasUppercase ? '✓' : '×'}{' '}
+                      uppercase
                     </li>
                     <li>
-                      {submission.passwordStrength.hasLowercase ? '✓' : '×'} lowercase
+                      {submission.passwordStrength.hasLowercase ? '✓' : '×'}{' '}
+                      lowercase
                     </li>
                     <li>
-                      {submission.passwordStrength.hasSpecialCharacter ? '✓' : '×'} special
-                      character
+                      {submission.passwordStrength.hasSpecialCharacter
+                        ? '✓'
+                        : '×'}{' '}
+                      special character
                     </li>
                   </ul>
                 </div>

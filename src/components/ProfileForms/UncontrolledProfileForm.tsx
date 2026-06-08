@@ -3,7 +3,10 @@ import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { selectCountries } from '../../features/countries/countriesSlice';
 import { addFormSubmission } from '../../features/formSubmissions/formSubmissionsSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import type { ProfileFormValues, UploadedImageData } from '../../types/profileForm';
+import type {
+  ProfileFormValues,
+  UploadedImageData,
+} from '../../types/profileForm';
 import { validateAndConvertImage } from '../../utils/imageUpload';
 import { getPasswordStrength } from '../../utils/passwordStrength';
 import {
@@ -55,41 +58,42 @@ export default function UncontrolledProfileForm({
   }
 
   async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-  const file = event.currentTarget.files?.[0];
-
-  setImageData(null);
-  setErrors((currentErrors) => ({
-    ...currentErrors,
-    image: undefined,
-  }));
-
-  if (!file) {
-    return;
-  }
-
-  try {
-    setIsImageLoading(true);
-
-    const convertedImage = await validateAndConvertImage(file);
-
-    setImageData(convertedImage);
-  } catch (error) {
-    event.currentTarget.value = '';
+    const file = event.currentTarget.files?.[0];
 
     setImageData(null);
-
     setErrors((currentErrors) => ({
       ...currentErrors,
-      image:
-        error instanceof Error
-          ? error.message
-          : 'Please upload a valid PNG or JPEG image.',
+      image: undefined,
     }));
-  } finally {
-    setIsImageLoading(false);
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      setIsImageLoading(true);
+
+      const convertedImage = await validateAndConvertImage(file);
+
+      setImageData(convertedImage);
+    } catch (error) {
+      event.currentTarget.value = '';
+
+      setImageData(null);
+
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        image:
+          error instanceof Error
+            ? error.message
+            : 'Please upload a valid PNG or JPEG image.',
+      }));
+    } finally {
+      setIsImageLoading(false);
+    }
   }
-}
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -98,7 +102,10 @@ export default function UncontrolledProfileForm({
       name: getStringFormValue(formData, 'name'),
       age: getStringFormValue(formData, 'age'),
       email: getStringFormValue(formData, 'email'),
-      gender: getStringFormValue(formData, 'gender') as ProfileFormValues['gender'],
+      gender: getStringFormValue(
+        formData,
+        'gender'
+      ) as ProfileFormValues['gender'],
       termsAccepted: formData.has('termsAccepted'),
       country: getStringFormValue(formData, 'country'),
       password: getStringFormValue(formData, 'password'),
@@ -113,48 +120,37 @@ export default function UncontrolledProfileForm({
       return;
     }
 
+    const validatedData = validationResult.data;
+
+    if (!validatedData.image || !imageData) {
+      setErrors({
+        image: 'Please upload a valid PNG or JPEG image.',
+      });
+      return;
+    }
+
     setErrors({});
 
-    try {
-      setIsImageLoading(true);
+    dispatch(
+      addFormSubmission({
+        formType: 'uncontrolled',
+        name: validatedData.name,
+        age: Number(validatedData.age),
+        email: validatedData.email,
+        gender: validatedData.gender,
+        termsAccepted: validatedData.termsAccepted,
+        country: validatedData.country,
+        imageBase64: imageData.imageBase64,
+        imageName: imageData.imageName,
+        passwordStrength: getPasswordStrength(validatedData.password),
+      })
+    );
 
-      const validatedData = validationResult.data;
-
-if (!validatedData.image || !imageData) {
-  setErrors({
-    image: 'Please upload a valid PNG or JPEG image.',
-  });
-  return;
-}
-
-dispatch(
-  addFormSubmission({
-    formType: 'uncontrolled',
-    name: validatedData.name,
-    age: Number(validatedData.age),
-    email: validatedData.email,
-    gender: validatedData.gender,
-    termsAccepted: validatedData.termsAccepted,
-    country: validatedData.country,
-    imageBase64: imageData.imageBase64,
-    imageName: imageData.imageName,
-    passwordStrength: getPasswordStrength(validatedData.password),
-  })
-);
-
-      event.currentTarget.reset();
-      setPassword('');
-      setImageData(null);
-      onSuccess();
-    } catch {
-      setErrors({
-        image: 'Failed to upload image.',
-      });
-    } finally {
-      setIsImageLoading(false);
-    }
+    event.currentTarget.reset();
+    setPassword('');
+    setImageData(null);
+    onSuccess();
   }
-
   return (
     <form className="profile-form" onSubmit={handleSubmit} noValidate>
       <div className="profile-form-field">
@@ -220,7 +216,9 @@ dispatch(
           aria-invalid={Boolean(errors.termsAccepted)}
           aria-describedby="uncontrolled-terms-error"
         />
-        <label htmlFor="uncontrolled-terms">I accept Terms and Conditions</label>
+        <label htmlFor="uncontrolled-terms">
+          I accept Terms and Conditions
+        </label>
       </div>
       <FieldError
         id="uncontrolled-terms-error"
@@ -239,7 +237,9 @@ dispatch(
           aria-describedby="uncontrolled-image-error"
         />
 
-        {isImageLoading && <p className="profile-form-hint">Loading image...</p>}
+        {isImageLoading && (
+          <p className="profile-form-hint">Loading image...</p>
+        )}
 
         <FieldError id="uncontrolled-image-error" message={errors.image} />
 

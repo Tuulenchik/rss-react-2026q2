@@ -1,15 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo, useState, type ChangeEvent } from 'react';
-import {
-  useForm,
-  useWatch,
-  type SubmitHandler,
-} from 'react-hook-form';
+import { useForm, useWatch, type SubmitHandler } from 'react-hook-form';
 
 import { selectCountries } from '../../features/countries/countriesSlice';
 import { addFormSubmission } from '../../features/formSubmissions/formSubmissionsSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import type { ProfileFormValues, UploadedImageData } from '../../types/profileForm';
+import type {
+  ProfileFormValues,
+  UploadedImageData,
+} from '../../types/profileForm';
 import { validateAndConvertImage } from '../../utils/imageUpload';
 import { getPasswordStrength } from '../../utils/passwordStrength';
 import { createProfileFormSchema } from '../../validation/profileFormSchema';
@@ -71,7 +70,6 @@ export default function ReactHookProfileForm({
       defaultValue: '',
     }) ?? '';
 
-
   async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0] ?? null;
 
@@ -98,38 +96,30 @@ export default function ReactHookProfileForm({
     }
   }
 
-  const onSubmit: SubmitHandler<ProfileFormValues> = async (data) => {
-  if (!data.image || data.gender === '') {
-    return;
-  }
-    try {
-      setIsImageLoading(true);
-
-      const convertedImage = await validateAndConvertImage(data.image);
-
-      dispatch(
-        addFormSubmission({
-          formType: 'react-hook-form',
-          name: data.name,
-          age: Number(data.age),
-          email: data.email,
-          gender: data.gender,
-          termsAccepted: data.termsAccepted,
-          country: data.country,
-          imageBase64: convertedImage.imageBase64,
-          imageName: convertedImage.imageName,
-          passwordStrength: getPasswordStrength(data.password),
-        })
-      );
-
-      reset(defaultValues);
-      setImageData(null);
-      onSuccess();
-    } finally {
-      setIsImageLoading(false);
+  const onSubmit: SubmitHandler<ProfileFormValues> = (data) => {
+    if (!data.image || !imageData || data.gender === '') {
+      return;
     }
-  };
 
+    dispatch(
+      addFormSubmission({
+        formType: 'react-hook-form',
+        name: data.name,
+        age: Number(data.age),
+        email: data.email,
+        gender: data.gender,
+        termsAccepted: data.termsAccepted,
+        country: data.country,
+        imageBase64: imageData.imageBase64,
+        imageName: imageData.imageName,
+        passwordStrength: getPasswordStrength(data.password),
+      })
+    );
+
+    reset(defaultValues);
+    setImageData(null);
+    onSuccess();
+  };
   return (
     <form className="profile-form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="profile-form-field">
@@ -205,16 +195,18 @@ export default function ReactHookProfileForm({
       <div className="profile-form-field">
         <label htmlFor="rhf-image">Profile image</label>
         <input
-  id="rhf-image"
-  name="image"
-  type="file"
-  accept="image/png,image/jpeg"
-  onChange={handleImageChange}
-  aria-invalid={Boolean(errors.image)}
-  aria-describedby="rhf-image-error"
-/>
+          id="rhf-image"
+          name="image"
+          type="file"
+          accept="image/png,image/jpeg"
+          onChange={handleImageChange}
+          aria-invalid={Boolean(errors.image)}
+          aria-describedby="rhf-image-error"
+        />
 
-        {isImageLoading && <p className="profile-form-hint">Loading image...</p>}
+        {isImageLoading && (
+          <p className="profile-form-hint">Loading image...</p>
+        )}
 
         <FieldError id="rhf-image-error" message={errors.image?.message} />
 
@@ -235,7 +227,10 @@ export default function ReactHookProfileForm({
           aria-describedby="rhf-password-error"
           {...register('password')}
         />
-        <FieldError id="rhf-password-error" message={errors.password?.message} />
+        <FieldError
+          id="rhf-password-error"
+          message={errors.password?.message}
+        />
         <PasswordStrengthIndicator password={password} />
       </div>
 
