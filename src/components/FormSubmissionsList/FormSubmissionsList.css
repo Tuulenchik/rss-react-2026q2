@@ -1,0 +1,150 @@
+.form-submissions-section {
+  margin-bottom: 50px;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.form-submissions-empty {
+  margin: 0;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.form-submissions-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.submission-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+
+  background: var(--panel-bg);
+  color: var(--text);
+
+  box-shadow: var(--shadow);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.submission-card--new {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  transform: translateY(-2px);
+}
+
+.submission-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-bottom: 16px;
+}
+
+.submission-card-header h2 {
+  margin: 0 0 4px;
+  color: var(--text-h);
+}
+
+.submission-card-header p {
+  margin: 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.submission-card-date {
+  color: var(--text);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.submission-card-body {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.submission-card-image {
+  width: 120px;
+  height: 120px;
+
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.submission-card-details {
+  display: grid;
+  gap: 10px;
+
+  margin: 0;
+}
+
+.submission-card-details div {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.submission-card-details dt {
+  color: var(--text-h);
+  font-weight: 700;
+}
+
+.submission-card-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.password-strength-summary {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.password-strength-summary span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-h);
+  font-weight: 700;
+}
+
+.password-strength-summary ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.password-strength-summary li {
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  padding: 6px 10px;
+
+  background: var(--accent-bg);
+  color: var(--accent);
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .submission-card-header,
+  .submission-card-body,
+  .submission-card-details div {
+    grid-template-columns: 1fr;
+  }
+
+  .submission-card-date {
+    white-space: normal;
+  }
+}

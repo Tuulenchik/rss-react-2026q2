@@ -13,6 +13,7 @@ import { getQueryErrorMessage } from '../../services/queryError';
 import { charactersApi } from '../../services/charactersApi';
 import { useAppDispatch } from '../../store/hooks';
 import FormsSection from '../../components/FormsSection/FormsSection';
+import FormSubmissionsList from '../../components/FormSubmissionsList/FormSubmissionsList';
 
 function getValidPageNumber(pageNumber: string | undefined) {
   const parsedPageNumber = Number(pageNumber);
@@ -118,6 +119,7 @@ export default function SearchPage() {
           </section>
 
           <FormsSection />
+          <FormSubmissionsList />
 
           <section className="results-section">
             <h1>Results</h1>
