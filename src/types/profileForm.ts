@@ -12,10 +12,7 @@ export type ProfileFormValues = BasicProfileFormValues & {
   country: string;
   password: string;
   confirmPassword: string;
-};
-
-export type ReactHookProfileFormValues = ProfileFormValues & {
-  image?: FileList;
+  image: File | null;
 };
 
 export type UploadedImageData = {

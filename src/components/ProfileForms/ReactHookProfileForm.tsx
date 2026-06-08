@@ -1,17 +1,20 @@
-import { useState, type ChangeEvent } from 'react';
-import { useForm, useWatch, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMemo, useState, type ChangeEvent } from 'react';
+import {
+  useForm,
+  useWatch,
+  type SubmitHandler,
+} from 'react-hook-form';
 
 import { selectCountries } from '../../features/countries/countriesSlice';
 import { addFormSubmission } from '../../features/formSubmissions/formSubmissionsSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import type { Gender } from '../../types/formSubmission';
-import type {
-  ReactHookProfileFormValues,
-  UploadedImageData,
-} from '../../types/profileForm';
+import type { ProfileFormValues, UploadedImageData } from '../../types/profileForm';
 import { validateAndConvertImage } from '../../utils/imageUpload';
 import { getPasswordStrength } from '../../utils/passwordStrength';
+import { createProfileFormSchema } from '../../validation/profileFormSchema';
 
+import FieldError from './FieldError';
 import { genderOptions } from './formOptions';
 import PasswordStrengthIndicator from './PasswordStrengthIndicator';
 
@@ -21,7 +24,7 @@ type ReactHookProfileFormProps = {
   onSuccess: () => void;
 };
 
-const defaultValues: ReactHookProfileFormValues = {
+const defaultValues: ProfileFormValues = {
   name: '',
   age: '',
   email: '',
@@ -30,11 +33,8 @@ const defaultValues: ReactHookProfileFormValues = {
   country: '',
   password: '',
   confirmPassword: '',
+  image: null,
 };
-
-function isGender(value: string): value is Gender {
-  return genderOptions.some((option) => option.value === value);
-}
 
 export default function ReactHookProfileForm({
   onSuccess,
@@ -42,28 +42,45 @@ export default function ReactHookProfileForm({
   const dispatch = useAppDispatch();
   const countries = useAppSelector(selectCountries);
 
+  const profileFormSchema = useMemo(
+    () => createProfileFormSchema(countries),
+    [countries]
+  );
+
   const [imageData, setImageData] = useState<UploadedImageData | null>(null);
-  const [imageError, setImageError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(false);
 
-  const { register, handleSubmit, reset, control } =
-    useForm<ReactHookProfileFormValues>({
-      defaultValues,
-    });
-const password =
-  useWatch({
+  const {
+    register,
+    handleSubmit,
+    reset,
     control,
-    name: 'password',
-    defaultValue: '',
-  }) ?? '';
+    setValue,
+    formState: { errors, isValid },
+  } = useForm<ProfileFormValues>({
+    defaultValues,
+    resolver: zodResolver(profileFormSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
 
-  const imageInputRegistration = register('image');
+  const password =
+    useWatch({
+      control,
+      name: 'password',
+      defaultValue: '',
+    }) ?? '';
+
 
   async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
+    const file = event.currentTarget.files?.[0] ?? null;
 
-    setImageError(null);
+    setValue('image', file, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+
     setImageData(null);
 
     if (!file) {
@@ -74,69 +91,91 @@ const password =
       setIsImageLoading(true);
       const convertedImage = await validateAndConvertImage(file);
       setImageData(convertedImage);
-    } catch (error) {
-      setImageError(
-        error instanceof Error ? error.message : 'Failed to upload image.'
-      );
+    } catch {
+      setImageData(null);
     } finally {
       setIsImageLoading(false);
     }
   }
 
-  const onSubmit: SubmitHandler<ReactHookProfileFormValues> = (data) => {
-    if (!isGender(data.gender)) {
-      setFormError('Please select a gender.');
-      return;
+  const onSubmit: SubmitHandler<ProfileFormValues> = async (data) => {
+  if (!data.image || data.gender === '') {
+    return;
+  }
+    try {
+      setIsImageLoading(true);
+
+      const convertedImage = await validateAndConvertImage(data.image);
+
+      dispatch(
+        addFormSubmission({
+          formType: 'react-hook-form',
+          name: data.name,
+          age: Number(data.age),
+          email: data.email,
+          gender: data.gender,
+          termsAccepted: data.termsAccepted,
+          country: data.country,
+          imageBase64: convertedImage.imageBase64,
+          imageName: convertedImage.imageName,
+          passwordStrength: getPasswordStrength(data.password),
+        })
+      );
+
+      reset(defaultValues);
+      setImageData(null);
+      onSuccess();
+    } finally {
+      setIsImageLoading(false);
     }
-
-    if (!imageData) {
-      setFormError('Please upload a valid PNG or JPEG image.');
-      return;
-    }
-
-    setFormError(null);
-
-    dispatch(
-      addFormSubmission({
-        formType: 'react-hook-form',
-        name: data.name,
-        age: Number(data.age),
-        email: data.email,
-        gender: data.gender,
-        termsAccepted: data.termsAccepted,
-        country: data.country,
-        imageBase64: imageData.imageBase64,
-        imageName: imageData.imageName,
-        passwordStrength: getPasswordStrength(data.password),
-      })
-    );
-
-    reset();
-    onSuccess();
   };
 
   return (
     <form className="profile-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      {formError && <p className="profile-form-error">{formError}</p>}
-
       <div className="profile-form-field">
         <label htmlFor="rhf-name">Name</label>
-        <input id="rhf-name" type="text" {...register('name')} />
+        <input
+          id="rhf-name"
+          type="text"
+          aria-invalid={Boolean(errors.name)}
+          aria-describedby="rhf-name-error"
+          {...register('name')}
+        />
+        <FieldError id="rhf-name-error" message={errors.name?.message} />
       </div>
 
       <div className="profile-form-field">
         <label htmlFor="rhf-age">Age</label>
-        <input id="rhf-age" type="number" {...register('age')} />
+        <input
+          id="rhf-age"
+          type="number"
+          aria-invalid={Boolean(errors.age)}
+          aria-describedby="rhf-age-error"
+          {...register('age')}
+        />
+        <FieldError id="rhf-age-error" message={errors.age?.message} />
       </div>
 
       <div className="profile-form-field">
         <label htmlFor="rhf-email">Email</label>
-        <input id="rhf-email" type="email" {...register('email')} />
+        <input
+          id="rhf-email"
+          type="email"
+          aria-invalid={Boolean(errors.email)}
+          aria-describedby="rhf-email-error"
+          {...register('email')}
+        />
+        <FieldError id="rhf-email-error" message={errors.email?.message} />
       </div>
 
       <div className="profile-form-field">
         <label htmlFor="rhf-gender">Gender</label>
-        <select id="rhf-gender" {...register('gender')}>
+        <select
+          id="rhf-gender"
+          aria-invalid={Boolean(errors.gender)}
+          aria-describedby="rhf-gender-error"
+          {...register('gender')}
+        >
           <option value="">Select gender</option>
 
           {genderOptions.map((option) => (
@@ -145,28 +184,39 @@ const password =
             </option>
           ))}
         </select>
+        <FieldError id="rhf-gender-error" message={errors.gender?.message} />
       </div>
 
       <div className="profile-form-checkbox">
-        <input id="rhf-terms" type="checkbox" {...register('termsAccepted')} />
+        <input
+          id="rhf-terms"
+          type="checkbox"
+          aria-invalid={Boolean(errors.termsAccepted)}
+          aria-describedby="rhf-terms-error"
+          {...register('termsAccepted')}
+        />
         <label htmlFor="rhf-terms">I accept Terms and Conditions</label>
       </div>
+      <FieldError
+        id="rhf-terms-error"
+        message={errors.termsAccepted?.message}
+      />
 
       <div className="profile-form-field">
         <label htmlFor="rhf-image">Profile image</label>
         <input
-          id="rhf-image"
-          type="file"
-          accept="image/png,image/jpeg"
-          {...imageInputRegistration}
-          onChange={(event) => {
-            void imageInputRegistration.onChange(event);
-            void handleImageChange(event);
-          }}
-        />
+  id="rhf-image"
+  name="image"
+  type="file"
+  accept="image/png,image/jpeg"
+  onChange={handleImageChange}
+  aria-invalid={Boolean(errors.image)}
+  aria-describedby="rhf-image-error"
+/>
 
         {isImageLoading && <p className="profile-form-hint">Loading image...</p>}
-        {imageError && <p className="profile-form-error">{imageError}</p>}
+
+        <FieldError id="rhf-image-error" message={errors.image?.message} />
 
         {imageData && (
           <div className="image-preview">
@@ -178,7 +228,14 @@ const password =
 
       <div className="profile-form-field">
         <label htmlFor="rhf-password">Password</label>
-        <input id="rhf-password" type="password" {...register('password')} />
+        <input
+          id="rhf-password"
+          type="password"
+          aria-invalid={Boolean(errors.password)}
+          aria-describedby="rhf-password-error"
+          {...register('password')}
+        />
+        <FieldError id="rhf-password-error" message={errors.password?.message} />
         <PasswordStrengthIndicator password={password} />
       </div>
 
@@ -187,7 +244,13 @@ const password =
         <input
           id="rhf-confirm-password"
           type="password"
+          aria-invalid={Boolean(errors.confirmPassword)}
+          aria-describedby="rhf-confirm-password-error"
           {...register('confirmPassword')}
+        />
+        <FieldError
+          id="rhf-confirm-password-error"
+          message={errors.confirmPassword?.message}
         />
       </div>
 
@@ -198,6 +261,8 @@ const password =
           type="text"
           list="rhf-countries"
           autoComplete="off"
+          aria-invalid={Boolean(errors.country)}
+          aria-describedby="rhf-country-error"
           {...register('country')}
         />
 
@@ -206,9 +271,15 @@ const password =
             <option value={country} key={country} />
           ))}
         </datalist>
+
+        <FieldError id="rhf-country-error" message={errors.country?.message} />
       </div>
 
-      <button className="app-button" type="submit">
+      <button
+        className="app-button"
+        type="submit"
+        disabled={!isValid || isImageLoading}
+      >
         Submit React Hook Form
       </button>
     </form>
