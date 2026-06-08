@@ -31,12 +31,6 @@ function getStringFormValue(formData: FormData, fieldName: string) {
   return typeof value === 'string' ? value : '';
 }
 
-function getImageFormValue(formData: FormData) {
-  const image = formData.get('image');
-
-  return image instanceof File && image.size > 0 ? image : null;
-}
-
 export default function UncontrolledProfileForm({
   onSuccess,
 }: UncontrolledProfileFormProps) {
@@ -49,6 +43,7 @@ export default function UncontrolledProfileForm({
   );
 
   const [password, setPassword] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imageData, setImageData] = useState<UploadedImageData | null>(null);
   const [errors, setErrors] = useState<ProfileFormErrors>({});
   const [isImageLoading, setIsImageLoading] = useState(false);
@@ -58,13 +53,16 @@ export default function UncontrolledProfileForm({
   }
 
   async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0] ?? null;
 
+    setSelectedImageFile(null);
     setImageData(null);
-    setErrors((currentErrors) => ({
-      ...currentErrors,
-      image: undefined,
-    }));
+    setErrors((currentErrors) => {
+      const nextErrors = { ...currentErrors };
+      delete nextErrors.image;
+      return nextErrors;
+    });
 
     if (!file) {
       return;
@@ -75,10 +73,12 @@ export default function UncontrolledProfileForm({
 
       const convertedImage = await validateAndConvertImage(file);
 
+      setSelectedImageFile(file);
       setImageData(convertedImage);
     } catch (error) {
-      event.currentTarget.value = '';
+      input.value = '';
 
+      setSelectedImageFile(null);
       setImageData(null);
 
       setErrors((currentErrors) => ({
@@ -110,7 +110,7 @@ export default function UncontrolledProfileForm({
       country: getStringFormValue(formData, 'country'),
       password: getStringFormValue(formData, 'password'),
       confirmPassword: getStringFormValue(formData, 'confirmPassword'),
-      image: getImageFormValue(formData),
+      image: selectedImageFile,
     };
 
     const validationResult = profileFormSchema.safeParse(rawData);
@@ -148,9 +148,11 @@ export default function UncontrolledProfileForm({
 
     event.currentTarget.reset();
     setPassword('');
+    setSelectedImageFile(null);
     setImageData(null);
     onSuccess();
   }
+
   return (
     <form className="profile-form" onSubmit={handleSubmit} noValidate>
       <div className="profile-form-field">

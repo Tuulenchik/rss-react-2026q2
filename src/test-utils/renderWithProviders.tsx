@@ -2,8 +2,11 @@ import { type ReactElement } from 'react';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { Provider } from 'react-redux';
-import { ThemeProvider } from '../context/ThemeProvider';
 import { configureStore } from '@reduxjs/toolkit';
+
+import { ThemeProvider } from '../context/ThemeProvider';
+import countriesReducer from '../features/countries/countriesSlice';
+import formSubmissionsReducer from '../features/formSubmissions/formSubmissionsSlice';
 import selectedItemsReducer from '../features/selectedItems/selectedItemsSlice';
 import { charactersApi } from '../services/charactersApi';
 
@@ -15,6 +18,8 @@ export function setupTestStore() {
   return configureStore({
     reducer: {
       selectedItems: selectedItemsReducer,
+      formSubmissions: formSubmissionsReducer,
+      countries: countriesReducer,
       [charactersApi.reducerPath]: charactersApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
@@ -27,6 +32,7 @@ export function renderWithProviders(
   { route = '/' }: RenderWithProvidersOptions = {}
 ) {
   const store = setupTestStore();
+
   return {
     store,
     ...render(
