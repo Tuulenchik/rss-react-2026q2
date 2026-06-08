@@ -1,0 +1,29 @@
+.forms-section {
+  margin-bottom: 50px;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.forms-description {
+  margin-bottom: 16px;
+}
+
+.forms-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.form-placeholder {
+  border: 1px dashed var(--accent-border);
+  border-radius: 12px;
+  padding: 24px;
+
+  background: var(--accent-bg);
+  color: var(--text-h);
+
+  text-align: center;
+  font-weight: 600;
+}
