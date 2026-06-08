@@ -1,11 +1,21 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 
-import type { BasicProfileFormValues } from '../../types/profileForm';
+import { addFormSubmission } from '../../features/formSubmissions/formSubmissionsSlice';
+import { selectCountries } from '../../features/countries/countriesSlice';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import type { Gender } from '../../types/formSubmission';
+import type { UploadedImageData } from '../../types/profileForm';
+import { validateAndConvertImage } from '../../utils/imageUpload';
+import { getPasswordStrength } from '../../utils/passwordStrength';
 
-import BasicProfilePreview from './BasicProfilePreview';
 import { genderOptions } from './formOptions';
+import PasswordStrengthIndicator from './PasswordStrengthIndicator';
 
 import './ProfileForm.css';
+
+type UncontrolledProfileFormProps = {
+  onSuccess: () => void;
+};
 
 function getStringFormValue(formData: FormData, fieldName: string) {
   const value = formData.get(fieldName);
@@ -13,29 +23,93 @@ function getStringFormValue(formData: FormData, fieldName: string) {
   return typeof value === 'string' ? value : '';
 }
 
-export default function UncontrolledProfileForm() {
-  const [submittedData, setSubmittedData] = useState<BasicProfileFormValues | null>(
-    null
-  );
+function isGender(value: string): value is Gender {
+  return genderOptions.some((option) => option.value === value);
+}
+
+export default function UncontrolledProfileForm({
+  onSuccess,
+}: UncontrolledProfileFormProps) {
+  const dispatch = useAppDispatch();
+  const countries = useAppSelector(selectCountries);
+
+  const [password, setPassword] = useState('');
+  const [imageData, setImageData] = useState<UploadedImageData | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+
+  function handlePasswordChange(event: ChangeEvent<HTMLInputElement>) {
+    setPassword(event.currentTarget.value);
+  }
+
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+
+    setImageError(null);
+    setImageData(null);
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      setIsImageLoading(true);
+      const convertedImage = await validateAndConvertImage(file);
+      setImageData(convertedImage);
+    } catch (error) {
+      setImageError(
+        error instanceof Error ? error.message : 'Failed to upload image.'
+      );
+    } finally {
+      setIsImageLoading(false);
+    }
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
-    const data: BasicProfileFormValues = {
-      name: getStringFormValue(formData, 'name'),
-      age: getStringFormValue(formData, 'age'),
-      email: getStringFormValue(formData, 'email'),
-      gender: getStringFormValue(formData, 'gender') as BasicProfileFormValues['gender'],
-      termsAccepted: formData.has('termsAccepted'),
-    };
+    const genderValue = getStringFormValue(formData, 'gender');
 
-    setSubmittedData(data);
+    if (!isGender(genderValue)) {
+      setFormError('Please select a gender.');
+      return;
+    }
+
+    if (!imageData) {
+      setFormError('Please upload a valid PNG or JPEG image.');
+      return;
+    }
+
+    setFormError(null);
+
+    const passwordValue = getStringFormValue(formData, 'password');
+
+    dispatch(
+      addFormSubmission({
+        formType: 'uncontrolled',
+        name: getStringFormValue(formData, 'name'),
+        age: Number(getStringFormValue(formData, 'age')),
+        email: getStringFormValue(formData, 'email'),
+        gender: genderValue,
+        termsAccepted: formData.has('termsAccepted'),
+        country: getStringFormValue(formData, 'country'),
+        imageBase64: imageData.imageBase64,
+        imageName: imageData.imageName,
+        passwordStrength: getPasswordStrength(passwordValue),
+      })
+    );
+
+    event.currentTarget.reset();
+    onSuccess();
   }
 
   return (
     <form className="profile-form" onSubmit={handleSubmit} noValidate>
+      {formError && <p className="profile-form-error">{formError}</p>}
+
       <div className="profile-form-field">
         <label htmlFor="uncontrolled-name">Name</label>
         <input id="uncontrolled-name" name="name" type="text" />
@@ -69,11 +143,67 @@ export default function UncontrolledProfileForm() {
         <label htmlFor="uncontrolled-terms">I accept Terms and Conditions</label>
       </div>
 
-      <button className="app-button" type="submit">
-        Collect uncontrolled data
-      </button>
+      <div className="profile-form-field">
+        <label htmlFor="uncontrolled-image">Profile image</label>
+        <input
+          id="uncontrolled-image"
+          name="image"
+          type="file"
+          accept="image/png,image/jpeg"
+          onChange={handleImageChange}
+        />
 
-      <BasicProfilePreview data={submittedData} />
+        {isImageLoading && <p className="profile-form-hint">Loading image...</p>}
+        {imageError && <p className="profile-form-error">{imageError}</p>}
+
+        {imageData && (
+          <div className="image-preview">
+            <img src={imageData.imageBase64} alt="Uploaded profile preview" />
+            <span>{imageData.imageName}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="profile-form-field">
+        <label htmlFor="uncontrolled-password">Password</label>
+        <input
+          id="uncontrolled-password"
+          name="password"
+          type="password"
+          onChange={handlePasswordChange}
+        />
+        <PasswordStrengthIndicator password={password} />
+      </div>
+
+      <div className="profile-form-field">
+        <label htmlFor="uncontrolled-confirm-password">Confirm password</label>
+        <input
+          id="uncontrolled-confirm-password"
+          name="confirmPassword"
+          type="password"
+        />
+      </div>
+
+      <div className="profile-form-field">
+        <label htmlFor="uncontrolled-country">Country</label>
+        <input
+          id="uncontrolled-country"
+          name="country"
+          type="text"
+          list="uncontrolled-countries"
+          autoComplete="off"
+        />
+
+        <datalist id="uncontrolled-countries">
+          {countries.map((country) => (
+            <option value={country} key={country} />
+          ))}
+        </datalist>
+      </div>
+
+      <button className="app-button" type="submit">
+        Submit uncontrolled form
+      </button>
     </form>
   );
 }

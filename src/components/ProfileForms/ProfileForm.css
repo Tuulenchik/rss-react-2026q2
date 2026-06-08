@@ -82,6 +82,92 @@
   overflow-wrap: anywhere;
 }
 
+.profile-form-error {
+  margin: 0;
+  border: 1px solid #f2a6a6;
+  border-radius: 8px;
+  padding: 10px 12px;
+
+  background: rgba(255, 0, 0, 0.08);
+  color: #ffb4b4;
+
+  font-weight: 700;
+}
+
+.profile-form-hint {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.image-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+
+  background: var(--panel-bg);
+}
+
+.image-preview img {
+  width: 72px;
+  height: 72px;
+
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.image-preview span {
+  overflow-wrap: anywhere;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.password-strength {
+  display: grid;
+  gap: 8px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+
+  background: var(--panel-bg);
+}
+
+.password-strength span {
+  color: var(--text-h);
+  font-weight: 700;
+}
+
+.password-strength ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.password-strength li {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 10px;
+
+  color: var(--text);
+  font-size: 14px;
+}
+
+.password-strength-item--valid {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
 @media (max-width: 520px) {
   .profile-form-preview div {
     grid-template-columns: 1fr;

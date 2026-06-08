@@ -7,3 +7,18 @@ export type BasicProfileFormValues = {
   gender: Gender | '';
   termsAccepted: boolean;
 };
+
+export type ProfileFormValues = BasicProfileFormValues & {
+  country: string;
+  password: string;
+  confirmPassword: string;
+};
+
+export type ReactHookProfileFormValues = ProfileFormValues & {
+  image?: FileList;
+};
+
+export type UploadedImageData = {
+  imageBase64: string;
+  imageName: string;
+};

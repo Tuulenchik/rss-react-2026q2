@@ -23,16 +23,16 @@ export default function FormsSection() {
   }
 
   function renderModalContent() {
-    if (activeForm === 'uncontrolled') {
-      return <UncontrolledProfileForm />;
-    }
-
-    if (activeForm === 'react-hook-form') {
-      return <ReactHookProfileForm />;
-    }
-
-    return null;
+  if (activeForm === 'uncontrolled') {
+    return <UncontrolledProfileForm onSuccess={handleCloseModal} />;
   }
+
+  if (activeForm === 'react-hook-form') {
+    return <ReactHookProfileForm onSuccess={handleCloseModal} />;
+  }
+
+  return null;
+}
 
   return (
     <section className="forms-section" aria-labelledby="forms-title">

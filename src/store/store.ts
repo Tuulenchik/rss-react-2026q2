@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import selectedItemsReducer from '../features/selectedItems/selectedItemsSlice';
 import formSubmissionsReducer from '../features/formSubmissions/formSubmissionsSlice';
 import { charactersApi } from '../services/charactersApi';
+import countriesReducer from '../features/countries/countriesSlice';
 
 export const store = configureStore({
   reducer: {
     selectedItems: selectedItemsReducer,
     formSubmissions: formSubmissionsReducer,
+    countries: countriesReducer,
     [charactersApi.reducerPath]: charactersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
