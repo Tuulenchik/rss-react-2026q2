@@ -1,6 +1,8 @@
 import { useState } from 'react';
 
 import Modal from '../Modal/Modal';
+import ReactHookProfileForm from '../ProfileForms/ReactHookProfileForm';
+import UncontrolledProfileForm from '../ProfileForms/UncontrolledProfileForm';
 
 import './FormsSection.css';
 
@@ -22,19 +24,11 @@ export default function FormsSection() {
 
   function renderModalContent() {
     if (activeForm === 'uncontrolled') {
-      return (
-        <div className="form-placeholder" data-testid="uncontrolled-form-placeholder">
-          Uncontrolled form will be implemented here.
-        </div>
-      );
+      return <UncontrolledProfileForm />;
     }
 
     if (activeForm === 'react-hook-form') {
-      return (
-        <div className="form-placeholder" data-testid="react-hook-form-placeholder">
-          React Hook Form implementation will be implemented here.
-        </div>
-      );
+      return <ReactHookProfileForm />;
     }
 
     return null;
@@ -43,6 +37,10 @@ export default function FormsSection() {
   return (
     <section className="forms-section" aria-labelledby="forms-title">
       <h1 id="forms-title">Forms</h1>
+
+      <p className="forms-description">
+        Open one of the form implementations in the same reusable modal.
+      </p>
 
       <div className="forms-actions">
         <button
