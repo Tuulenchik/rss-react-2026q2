@@ -1,0 +1,9 @@
+.results-list {
+  display: grid;
+  gap: 16px;
+}
+
+.results-empty {
+  margin: 0;
+  color: #57606a;
+}
